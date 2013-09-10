@@ -1,0 +1,32 @@
+#------------------ Define output verbosity ------------------#
+
+/control/verbose 2
+/run/verbose 2
+/run/initialize
+
+#------------------ # Switch on / off sample ------------------#
+
+/geometry/sample on 
+/geometry/sample_x 1.0 mm
+
+#------------------ Define detector ------------------#
+
+/geometry/detector on
+/geometry/update 
+
+#------------------ Define source geometry ------------------#
+
+/gun/isotropy fracpi
+/gun/origin -20.0 0.0 0.0 mm
+/gun/inpenergy 20.0 keV
+
+/control/execute vis.mac
+
+#------------------ Define output file locations ------------------#
+
+/runinf/name output
+
+#------------------ Define number of events ------------------#
+
+/run/beamOn 50
+

@@ -1,0 +1,10 @@
+# Macro for visualisation using HepRApp
+# http://geant4.slac.stanford.edu/Presentations/vis/G4HepRAppTutorial/G4HepRAppTutorial.html
+/vis/scene/create
+/vis/open HepRepFile
+/vis/viewer/set/viewpointThetaPhi 0 0 deg
+/vis/viewer/flush
+/vis/viewer/set/style surface
+/tracking/storeTrajectory 1
+/vis/scene/add/trajectories
+/vis/scene/endOfEventAction accumulate
