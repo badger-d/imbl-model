@@ -63,8 +63,8 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 
   if(command == detector_cmd)
     {
-      myDetector->Set_Detector_Flag(newValue);
-      G4cout << "### Detector included." << newValue << G4endl;
+      myDetector->Set_Ion_Cham_Flag(newValue);
+      G4cout << "### Ion chamber included." << newValue << G4endl;
     }
 
   if(command == sample_cmd)

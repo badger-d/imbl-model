@@ -47,7 +47,7 @@
 #include "G4Gamma.hh"
 #include "G4OpticalPhoton.hh"
 
-// leptons
+// Leptons
 #include "G4MuonPlus.hh"
 #include "G4MuonMinus.hh"
 #include "G4NeutrinoMu.hh"

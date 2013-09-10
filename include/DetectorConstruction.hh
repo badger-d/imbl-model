@@ -28,10 +28,10 @@ public:
   G4VPhysicalVolume* Construct();
 
   // Control inclusion of housing structures [on, off]
-  virtual void Set_Detector_Flag(G4String val){detector_flag = val;};
+  virtual void Set_Ion_Cham_Flag(G4String val){ion_cham_flag = val;};
   virtual void Set_Sample_Flag(G4String val){sample_flag = val;};
   
-  virtual G4String Get_Detector_Flag(){return detector_flag;};
+  virtual G4String Get_Ion_Cham_Flag(){return ion_cham_flag;};
   virtual G4String Get_Sample_Flag(){return sample_flag;};
 
   // Control the sample thickness.
@@ -46,31 +46,31 @@ private:
   G4VPhysicalVolume* ConstructGeometry();
 
   // Logical volume pointers.
-  G4LogicalVolume* detector_log;
+  G4LogicalVolume* ion_cham_log;
+  G4VPhysicalVolume* exp_hall_log;
   G4LogicalVolume* sample_log;
-  G4VPhysicalVolume* expHall_log;
 
   // Physical volume pointers.
-  G4VPhysicalVolume* detector_phys;
+  G4VPhysicalVolume* ion_cham_phys;
+  G4VPhysicalVolume* exp_hall_phys;
   G4VPhysicalVolume* sample_phys;
-  G4VPhysicalVolume* expHall_phys;
 
   // Sensitive detector pointers.
-  SensitiveDet* aDetectorSD;
-  SensitiveDet* aSampleSD;
-  SensitiveDet* aHallSD;
+  SensitiveDet* exp_hall_sd; // Declare pointer to experimental hall.
+  SensitiveDet* ion_cham_sd; // Declare pointer to ion chamber sensitive detector.
+  SensitiveDet* sample_sd;   // Declare pointer to sample sensitive detector.
 
   // Material pointers
-  G4Material* hall_mat;   // Experimental hall material.
-  G4Material* detector_mat;   // Collimator material.
-  G4Material* sample_mat;   // Collimator backstop material.
+  G4Material* hall_mat;              // Declare experimental hall material.
+  G4Material* ion_cham_fill_gas_mat; // Declare ion chamber fill gas material.
+  G4Material* sample_mat;            // Declare sample material.
 
   // Detector messenger pointer.
   DetectorMessenger* detectorMessenger;
 
   // Flags to switch components on/off.
   G4String sample_flag;
-  G4String detector_flag;
+  G4String ion_cham_flag;
   
   // Variable that will be modified by messenger file.
   G4double sample_x;

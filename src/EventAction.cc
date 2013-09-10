@@ -22,71 +22,77 @@ void EventAction::BeginOfEventAction(const G4Event* evt)
 {
   G4SDManager* SDman = G4SDManager::GetSDMpointer();
 
-  if(detector->Get_Detector_Flag() == "on")
+  // Check if the ion chamber is included in the detector construction.
+  if(detector->Get_Ion_Cham_Flag() == "on")
     {
-      detectorHC_ID = SDman->GetCollectionID("detector/HitsCollection");
+      ion_cham_hc_id = SDman->GetCollectionID("ic/HitsCollection");
     }
 
+  // Check if the sample is included in the detector construction.
   if(detector->Get_Sample_Flag() == "on")
      {
-	   sampleHC_ID = SDman->GetCollectionID("sample/HitsCollection");
+	   sample_hc_id = SDman->GetCollectionID("sample/HitsCollection");
      }
 
-  hallHC_ID = SDman->GetCollectionID("hall/HitsCollection");
+  // The experimental hall must be included by definition so no need to test this.
+  exp_hall_hc_id = SDman->GetCollectionID("exp_hall/HitsCollection");
 
+  // Increment the event counter by 1.
+  event_id = evt->GetEventID() + 1;
 
-  G4int eventID = evt->GetEventID() + 1;
-
-  if (eventID < 101 || eventID%10000 == 0)
+  // Print the event number every 10000 lines.
+  if (event_id < 101 || event_id%10000 == 0)
   G4cout << "-------------------------------------------->>> Event "
-	 << eventID << G4endl;
+	 << event_id << G4endl;
 
 }
 
 void EventAction::EndOfEventAction(const G4Event* evt) {
 	G4HCofThisEvent * HCE = evt->GetHCofThisEvent();
 
-	DetectorHitsCollection* detector_HC = 0;
-	DetectorHitsCollection* hall_HC = 0;
+	DetectorHitsCollection* ion_cham_hc = 0; // Initialise a pointer for the actual hits collection for the ion chamber.
+	DetectorHitsCollection* exp_hall_hc = 0; // Initialise a pointer for the actual hits collection for the experimental hall.
 
 	// Number of interactions in each sensitive volume.
-	G4int numTrigs_detector = 0;
-	G4int numTrigs_hall = 0;
+	G4int num_trigs_ion_cham = 0; // Counter for the number of interactions in the ion chamber.
+	G4int num_trigs_exp_hall = 0; // Counter for the number of interactions in the experimental hall.
 
-	// Total number of interactions.
-	G4int numTrigs = 0;
-
-	G4int eventID = evt->GetEventID() + 1;
+	// Init. counter for total number of interactions in a detector that can trigger the readout.
+	G4int tot_num_trigs = 0;
 
 	if (HCE) {
 
-		if (detector->Get_Detector_Flag() == "on") {
-			detector_HC = (DetectorHitsCollection*) (HCE->GetHC(detectorHC_ID));
-			if (detector_HC->entries() > 0) {
-				numTrigs_detector += detector_HC->entries();
-				numTrigs++;
+		if (detector->Get_Ion_Cham_Flag() == "on") {
+
+			ion_cham_hc = (DetectorHitsCollection*) (HCE->GetHC(ion_cham_hc_id));
+
+			if (ion_cham_hc->entries() > 0) {
+				// If there are triggers in the ion chamber, add them to the count.
+				num_trigs_ion_cham += ion_cham_hc->entries();
+				tot_num_trigs++;
 			}
 		}
 
-		hall_HC = (DetectorHitsCollection*) (HCE->GetHC(hallHC_ID));
+		exp_hall_hc = (DetectorHitsCollection*) (HCE->GetHC(exp_hall_hc_id));
 
-		if (hall_HC->entries() > 0) {
-			numTrigs_hall += hall_HC->entries();
+		if (exp_hall_hc->entries() > 0) {
+			num_trigs_exp_hall += exp_hall_hc->entries();
 		}
 
 
 	}
 
-    if (numTrigs > 0) {
+	// If any valid detector has interactions in it the read out the transport.
+    if (tot_num_trigs > 0) {
 
 		// Get the output file pointer.
-		outFile_ptr = run->Get_File_Ptr();
+		out_file_ptr = run->Get_File_Ptr();
 
 		// Output the detector data.
-		if (numTrigs_detector > 0) {
-			for (G4int i = 0; i < numTrigs_detector; i++) {
+		if (num_trigs_ion_cham > 0) {
+			for (G4int i = 0; i < num_trigs_ion_cham; i++) {
 				G4int partrefnum = 0;
-				G4String partref = (*detector_HC)[i]->GetParticle();
+				G4String partref = (*ion_cham_hc)[i]->GetParticle();
 
 				if (partref == "electron") {
 					partrefnum = 0;
@@ -94,21 +100,21 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 					partrefnum = 1;
 				}
 
-				*outFile_ptr << (*detector_HC)[i]->GetTrackID() << " "
-						<< (*detector_HC)[i]->GetParentID() << " "
-						<< (*detector_HC)[i]->GetEnergyDep() / keV << " "
-						<< -(*detector_HC)[i]->GetDeltaEnergy() / keV << " "
-						<< (*detector_HC)[i]->GetPosition().x() / cm << " "
-						<< (*detector_HC)[i]->GetPosition().y() / cm << " "
-						<< (*detector_HC)[i]->GetPosition().z() / cm << " "
-						<< (*detector_HC)[i]->GetGlobalTime() / ns << " "
-						<< (*detector_HC)[i]->GetPreProcess() << " " \
-						<< partrefnum << " "
-						<< i << " "
-						<< 1000 << " "
-						<< (*detector_HC)[i]->GetProcess() << " "
-						<< eventID << " "
-						<< G4endl;
+				*out_file_ptr << (*ion_cham_hc)[i]->GetTrackID() << " "
+					          << (*ion_cham_hc)[i]->GetParentID() << " "
+						      << (*ion_cham_hc)[i]->GetEnergyDep() / keV << " "
+						      << -(*ion_cham_hc)[i]->GetDeltaEnergy() / keV << " "
+						      << (*ion_cham_hc)[i]->GetPosition().x() / cm << " "
+						      << (*ion_cham_hc)[i]->GetPosition().y() / cm << " "
+						      << (*ion_cham_hc)[i]->GetPosition().z() / cm << " "
+						      << (*ion_cham_hc)[i]->GetGlobalTime() / ns << " "
+						      << (*ion_cham_hc)[i]->GetPreProcess() << " "
+						      << partrefnum << " "
+						      << i << " "
+						      << 1000 << " "
+						      << (*ion_cham_hc)[i]->GetProcess() << " "
+						      << event_id << " "
+						      << G4endl;
 			}
 		}
 

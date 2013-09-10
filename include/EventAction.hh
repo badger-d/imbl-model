@@ -28,21 +28,20 @@ public:
   virtual void BeginOfEventAction(const G4Event*);
   virtual void EndOfEventAction(const G4Event*);
 
-  //messenger functions
-
 private:
 
   PrimaryGeneratorAction* primary;
   RunAction* run;
   DetectorConstruction* detector;
 
-  G4int detectorHC_ID;
-  G4int sampleHC_ID;
-  G4int hallHC_ID;
+  G4int ion_cham_hc_id; // Declare hits collection id variable for the ion chamber.
+  G4int sample_hc_id;   // Declare hits collection id variable for the sample.
+  G4int exp_hall_hc_id; // Declare hits collection id variable for the experimental hall.
 
-  ofstream* outFile_ptr;
+  ofstream* out_file_ptr; // Declare pointer to output file that will be written to.
+  G4String out_data;      // Declare string that can contain output file data.
 
-  G4String outData;
+  G4int event_id;  // Event ID conter.
 
 };
 #endif
