@@ -25,7 +25,7 @@ void EventAction::BeginOfEventAction(const G4Event* evt)
   // Check if the ion chamber is included in the detector construction.
   if(detector->Get_Ion_Cham_Flag() == "on")
     {
-      ion_cham_hc_id = SDman->GetCollectionID("ic/HitsCollection");
+      ion_cham_hc_id = SDman->GetCollectionID("ion_cham/HitsCollection");
     }
 
   // Check if the sample is included in the detector construction.
