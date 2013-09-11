@@ -4,21 +4,16 @@
 /run/verbose 2
 /run/initialize
 
-#------------------ # Switch on / off sample ------------------#
-
-/geometry/sample on 
-/geometry/sample_x 1.0 mm
-
 #------------------ Define detector ------------------#
 
-/geometry/detector on
+/geometry/ion_cham on
 /geometry/update 
 
 #------------------ Define source geometry ------------------#
 
-/gun/isotropy fracpi
-/gun/origin -20.0 0.0 0.0 mm
-/gun/inpenergy 20.0 keV
+/gun/isotropy forward
+/gun/origin 0.0 0.0 -200.0 mm
+/gun/inpenergy 5.0 keV
 
 /control/execute vis.mac
 
@@ -28,5 +23,5 @@
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 50
+/run/beamOn 500
 
