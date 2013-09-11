@@ -35,8 +35,8 @@ public:
   virtual G4String Get_Sample_Flag(){return sample_flag;};
 
   // Control the sample thickness.
-  virtual void Set_Sample_X(G4double val){sample_x = val;}; // Collimator frame depth.
-  virtual G4double Get_Sample_X(){return sample_x;};
+  virtual void Set_Sample_Pos(G4ThreeVector val){sample_pos = val;}; // Collimator frame depth.
+  virtual G4ThreeVector Get_Sample_Pos(){return sample_pos;};
 
   // Control updating of the geometry.
   virtual void UpdateGeometry(); // Updates geometry.
@@ -46,12 +46,12 @@ private:
   G4VPhysicalVolume* ConstructGeometry();
 
   // Logical volume pointers.
-  G4LogicalVolume* ion_cham_log;
-  G4VPhysicalVolume* exp_hall_log;
+  G4LogicalVolume* ion_cham_shell_log;  // Declare pointer to logical volume of shell of ion chamber.
+  G4LogicalVolume* exp_hall_log;
   G4LogicalVolume* sample_log;
 
   // Physical volume pointers.
-  G4VPhysicalVolume* ion_cham_phys;
+  G4VPhysicalVolume* ion_cham_shell_phys;   // Declare pointer to physical volume of shell of ion chamber.
   G4VPhysicalVolume* exp_hall_phys;
   G4VPhysicalVolume* sample_phys;
 
@@ -61,8 +61,9 @@ private:
   SensitiveDet* sample_sd;   // Declare pointer to sample sensitive detector.
 
   // Material pointers
-  G4Material* hall_mat;              // Declare experimental hall material.
+  G4Material* exp_hall_mat;          // Declare experimental hall material.
   G4Material* ion_cham_fill_gas_mat; // Declare ion chamber fill gas material.
+  G4Material* ion_cham_shell_mat;    // Define the material for the shell of the ion chamber.
   G4Material* sample_mat;            // Declare sample material.
 
   // Detector messenger pointer.
@@ -72,8 +73,9 @@ private:
   G4String sample_flag;
   G4String ion_cham_flag;
   
-  // Variable that will be modified by messenger file.
-  G4double sample_x;
+  // Variables that will be modified by messenger file.
+  G4ThreeVector ion_cham_pos; // Position of the ion chamber.
+  G4ThreeVector sample_pos;   // Position of the sample.
 
 
 };
