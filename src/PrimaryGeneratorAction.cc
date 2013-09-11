@@ -16,7 +16,7 @@ PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC)
 :detector(myDC)
 {
   // Set initial values
-  isotropy = "onepi";
+  isotropy = "forward";
   energy = 1. * keV;
   origin = G4ThreeVector(0.,0.,0.);
 
@@ -56,29 +56,26 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 
   if(isotropy == "fourpi")
   {
+	  // Sample random emission direction in 4pi.
 	  theta = acos(2*(G4UniformRand())-1);
 	  phi = 2*((pi)*(G4UniformRand()));
   }
 
   else if(isotropy == "twopi")
   {
+	  // Sample random emission direction in 2pi.
 	  theta = acos(2*(G4UniformRand())-1);
 	  phi = pi + ((pi)*(G4UniformRand()));
   }
 
-  else if(isotropy == "fracpi")
+  else if(isotropy == "forward")
   {
-	  // Generate vector in +/- 45deg squared cone from emission location
-	  G4double const frac  = 0.1 * pi;
-	  G4double const theta_mean = 0.5*pi;
-	  G4double const phi_mean   = 1.5*pi;
-
-	  theta = (G4UniformRand()-0.5) * frac + theta_mean;
-	  phi   = (G4UniformRand()-0.5) * frac + phi_mean;
+      // Emit particle in forward direction (-z to + z).
+	  theta = acos(2*(0.5));
+	  phi = pi;
   }
 
   momentum.setRThetaPhi(r,theta,phi);
-  momentum.rotateZ(pi/2.0);
 
   particleGun->SetParticleMomentumDirection(momentum);
 

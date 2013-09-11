@@ -19,10 +19,10 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction* Gun
 
   isotropy_cmd = new G4UIcmdWithAString("/gun/isotropy",this);
   isotropy_cmd->SetGuidance("Shoot particles in random directions");
-  isotropy_cmd->SetGuidance("Choice : twopi(default), fourpi, fracpi");
+  isotropy_cmd->SetGuidance("Choice : twopi(default), fourpi, forward");
   isotropy_cmd->SetParameterName("choice",true);
   isotropy_cmd->SetDefaultValue("twopi");
-  isotropy_cmd->SetCandidates("twopi fourpi fracpi");
+  isotropy_cmd->SetCandidates("twopi fourpi forward");
   isotropy_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   origin_cmd = new G4UIcmdWith3VectorAndUnit("/gun/origin", this);
