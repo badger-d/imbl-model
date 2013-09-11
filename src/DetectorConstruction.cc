@@ -41,12 +41,16 @@ DetectorConstruction::DetectorConstruction()
   // Sensitive volume pointers.
   exp_hall_sd = 0; // Initialise pointer to experimental hall sensitive detector.
   ion_cham_sd = 0; // Initialise pointer to ion chamber sensitive detector.
+  sample_sd = 0;   // Initialise pointer to sample sensitive detector.
 
   // Initialise the position of the ion chamber.
   ion_cham_pos = G4ThreeVector(0.0*mm, 0.0*mm, 2.0*mm);
   
   // Initialise the thickness of the sample.
   sample_pos = G4ThreeVector(2.0*mm, 0.0*mm, 0.0*mm);
+
+  // Specify the correction value that ensures there are no boundary clashes.
+  correc_fac = 0.01*mm;
 
 }
 
@@ -172,7 +176,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructGeometry()
 
     if (! exp_hall_sd)
       {
-    	exp_hall_sd = new SensitiveDet("/detector/hall");
+    	exp_hall_sd = new SensitiveDet("/detector/exp_hall");
         SDman->AddNewDetector(exp_hall_sd);
       }
     exp_hall_log->SetSensitiveDetector(exp_hall_sd);
@@ -193,16 +197,16 @@ G4VPhysicalVolume* DetectorConstruction::ConstructGeometry()
         // ------------------------------------- //
 
         // Specify the dimensions of the external section of the Al box that is the shell of the ion chamber.
-        G4double ion_cham_ext_x_mm = 8.0*mm;
-        G4double ion_cham_ext_y_mm = 16.0*mm;
-        G4double ion_cham_ext_z_mm = 12.6*mm;
+        G4double ion_cham_ext_x_mm = 80.0*mm;
+        G4double ion_cham_ext_y_mm = 160.0*mm;
+        G4double ion_cham_ext_z_mm = 126.0*mm;
 
         // Specify the dimensions of the internal section of the Al box that is the shell of the ion chamber.
         // The shell thickness is 1.0*mm all the way around.
-        G4double ion_cham_wall_thick_mm = 1.0*mm;
-        G4double ion_cham_int_x_mm = ion_cham_ext_x_mm - ion_cham_wall_thick_mm;
-        G4double ion_cham_int_y_mm = ion_cham_ext_y_mm - ion_cham_wall_thick_mm;
-        G4double ion_cham_int_z_mm = ion_cham_ext_z_mm - ion_cham_wall_thick_mm;
+        G4double ion_cham_wall_thick_mm = 10.0*mm;
+        G4double ion_cham_int_x_mm = ion_cham_ext_x_mm - (2.0 * ion_cham_wall_thick_mm);
+        G4double ion_cham_int_y_mm = ion_cham_ext_y_mm - (2.0 * ion_cham_wall_thick_mm);
+        G4double ion_cham_int_z_mm = ion_cham_ext_z_mm - (2.0 * ion_cham_wall_thick_mm);
 
         // Construct the external box of the ion chamber.
         G4VSolid* ion_cham_shell = new G4Box("ion_cham_shell", ion_cham_ext_x_mm * 0.5, ion_cham_ext_y_mm * 0.5, ion_cham_ext_z_mm * 0.5);
@@ -216,27 +220,105 @@ G4VPhysicalVolume* DetectorConstruction::ConstructGeometry()
         // Construct the logical volume for the shell of the ion chamber.
         ion_cham_shell_log = new G4LogicalVolume(ion_cham_shell, ion_cham_shell_mat,"ion_cham_shell_log",0,0,0);
 
-//        // Construct the physical volume for the shell of the ion chamber.
-//        ion_cham_shell_phys = new G4PVPlacement(0,                  // Rotation.
-//        								        ion_cham_pos,    // (x,y,z).
-//        								        ion_cham_shell_log, // Logical volume.
-//        								        "ion_cham_phys",    // Name.
-//        								        exp_hall_log,       // Mother volume.
-//        								        false,              // No boolean operations.
-//        								         0);                // Copy number.
-//
-//
-//        // Set the visualisation attributes of the ion chamber.
-//        G4VisAttributes* detector_visAtt = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
-//        ion_cham_shell_log->SetVisAttributes(detector_visAtt);
-//
-//        // Make the ion chamber a sensitive volume.
-//        if (! ion_cham_sd)
-//          {
-//        	ion_cham_sd = new SensitiveDet("/detectors/detector");
-//            SDman->AddNewDetector(ion_cham_sd);
-//          }
-//        ion_cham_shell_log->SetSensitiveDetector(ion_cham_sd);
+        // Construct the physical volume for the shell of the ion chamber.
+        ion_cham_shell_phys = new G4PVPlacement(0,                  // Rotation.
+        								        ion_cham_pos,    // (x,y,z).
+        								        ion_cham_shell_log, // Logical volume.
+        								        "ion_cham_phys",    // Name.
+        								        exp_hall_log,       // Mother volume.
+        								        false,              // No boolean operations.
+        								         0);                // Copy number.
+
+        // Specify the dimensions of section before the sensitive region with the collection electrode.
+        G4double ion_cham_pre_sens_x_mm = ion_cham_int_x_mm - correc_fac;
+        G4double ion_cham_pre_sens_y_mm = ion_cham_int_y_mm - correc_fac;
+        G4double ion_cham_pre_sens_z_mm = 43.0*mm;
+
+        // Specify the location of the section before the sensitive region.
+        G4ThreeVector ion_cham_pre_sens_pos = G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_int_z_mm) + (0.5* ion_cham_pre_sens_z_mm));
+
+        // Construct the air region before the electrode.
+		G4Box* ion_cham_pre_sens = new G4Box("ion_cham_pre_sens", ion_cham_pre_sens_x_mm * 0.5, ion_cham_pre_sens_y_mm * 0.5, ion_cham_pre_sens_z_mm * 0.5);
+
+		// Construct the logical volume for the shell of the ion chamber.
+		ion_cham_pre_sens_log = new G4LogicalVolume(ion_cham_pre_sens, ion_cham_fill_gas_mat,"ion_cham_pre_sens_log",0,0,0);
+
+		// Construct the physical volume for the shell of the ion chamber.
+		ion_cham_pre_sens_phys = new G4PVPlacement(0,                        // Rotation.
+				                                   ion_cham_pre_sens_pos,    // (x,y,z).
+				                                   ion_cham_pre_sens_log,    // Logical volume.
+		        								   "ion_cham_pre_sens_phys", // Name.
+		        								   ion_cham_shell_log,       // Mother volume.
+            								       false,                    // No boolean operations.
+		        								   0);                       // Copy number.
+
+        // Specify the dimensions of mid section with the collection electrode.
+        G4double ion_cham_sens_x_mm = ion_cham_int_x_mm - correc_fac;
+        G4double ion_cham_sens_y_mm = ion_cham_int_y_mm - correc_fac;
+        G4double ion_cham_sens_z_mm = 20.0*mm;
+
+        // Specify the location of the section before the sensitive region.
+        G4ThreeVector ion_cham_sens_pos = G4ThreeVector(0.0, 0.0, 0.0);
+
+        // Construct the air region before the electrode.
+		G4Box* ion_cham_sens = new G4Box("ion_cham_sens", ion_cham_sens_x_mm * 0.5, ion_cham_sens_y_mm * 0.5, ion_cham_sens_z_mm * 0.5);
+
+		// Construct the logical volume for the shell of the ion chamber.
+		ion_cham_sens_log = new G4LogicalVolume(ion_cham_sens, ion_cham_fill_gas_mat,"ion_cham_sens_log",0,0,0);
+
+		// Construct the physical volume for the shell of the ion chamber.
+		ion_cham_sens_phys = new G4PVPlacement(0,                     // Rotation.
+				                               ion_cham_sens_pos,     // (x,y,z).
+				                               ion_cham_sens_log,     // Logical volume.
+		        							   "ion_cham__sens_phys", // Name.
+		        							   ion_cham_shell_log,    // Mother volume.
+            								   false,                 // No boolean operations.
+		        							   0);                    // Copy number.
+
+        // Specify the dimensions of section after the sensitive region with the collection electrode.
+        G4double ion_cham_post_sens_x_mm = ion_cham_int_x_mm - correc_fac;
+        G4double ion_cham_post_sens_y_mm = ion_cham_int_y_mm - correc_fac;
+        G4double ion_cham_post_sens_z_mm = 43.0*mm;
+
+        // Specify the location of the section before the sensitive region.
+        G4ThreeVector ion_cham_post_sens_pos = G4ThreeVector(0.0, 0.0, +(0.5 * ion_cham_int_z_mm) - (0.5* ion_cham_post_sens_z_mm));
+
+        // Construct the air region before the electrode.
+		G4Box* ion_cham_post_sens = new G4Box("ion_cham_post_sens", ion_cham_post_sens_x_mm * 0.5, ion_cham_post_sens_y_mm * 0.5, ion_cham_post_sens_z_mm * 0.5);
+
+		// Construct the logical volume for the shell of the ion chamber.
+		ion_cham_post_sens_log = new G4LogicalVolume(ion_cham_post_sens, ion_cham_fill_gas_mat,"ion_cham_post_sens_log",0,0,0);
+
+		// Construct the physical volume for the shell of the ion chamber.
+		ion_cham_post_sens_phys = new G4PVPlacement(0,                        // Rotation.
+				                                   ion_cham_post_sens_pos,    // (x,y,z).
+				                                   ion_cham_post_sens_log,    // Logical volume.
+		        								   "ion_cham_post_sens_phys", // Name.
+		        								   ion_cham_shell_log,       // Mother volume.
+            								       false,                    // No boolean operations.
+		        								   0);                       // Copy number.
+
+        // Set the visualisation attributes of the ion chamber.
+        G4VisAttributes* ion_cham_shell_vis_att = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
+        ion_cham_shell_log->SetVisAttributes(ion_cham_shell_vis_att);
+
+        G4VisAttributes* ion_cham_pre_sens_vis_att = new G4VisAttributes(G4Colour(0.2,0.0,1.0));
+        ion_cham_pre_sens_log->SetVisAttributes(ion_cham_pre_sens_vis_att);
+
+        G4VisAttributes* ion_cham_sens_vis_att = new G4VisAttributes(G4Colour(0.3,0.0,1.0));
+        ion_cham_sens_log->SetVisAttributes(ion_cham_sens_vis_att);
+
+        G4VisAttributes* ion_cham_post_sens_vis_att = new G4VisAttributes(G4Colour(0.4,0.0,1.0));
+        ion_cham_post_sens_log->SetVisAttributes(ion_cham_post_sens_vis_att);
+
+        // Make the ion chamber a sensitive volume.
+        if (! ion_cham_sd)
+          {
+        	ion_cham_sd = new SensitiveDet("/detector/ion_cham");
+            SDman->AddNewDetector(ion_cham_sd);
+          }
+        ion_cham_shell_log->SetSensitiveDetector(ion_cham_sd);
+
 
       }
     else
@@ -282,7 +364,7 @@ G4VPhysicalVolume* DetectorConstruction::ConstructGeometry()
         // Make the ion chamber a sensitive volume.
 		if(! sample_sd)
 			{
-        	  sample_sd = new SensitiveDet("/detectors/sample");
+        	  sample_sd = new SensitiveDet("/detector/sample");
               SDman->AddNewDetector(sample_sd);
             }
 
