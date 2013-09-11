@@ -28,11 +28,11 @@ private:
   G4UIdirectory*        geometryDir;
 
   // Commands to switch components on/off.
-  G4UIcmdWithAString* detector_cmd;
+  G4UIcmdWithAString* ion_cham_cmd;
   G4UIcmdWithAString* sample_cmd;
 
-  // Command to update the sample thickness.
-  G4UIcmdWithADoubleAndUnit* sampleX_cmd;
+  // Command to update the sample position.
+  G4UIcmdWith3VectorAndUnit* sample_pos_cmd;
   
   // Command to update the geometry.
   G4UIcmdWithoutParameter* update_cmd;

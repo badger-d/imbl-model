@@ -46,12 +46,18 @@ private:
   G4VPhysicalVolume* ConstructGeometry();
 
   // Logical volume pointers.
-  G4LogicalVolume* ion_cham_shell_log;  // Declare pointer to logical volume of shell of ion chamber.
+  G4LogicalVolume* ion_cham_shell_log;     // Declare pointer to logical volume of shell of ion chamber.
+  G4LogicalVolume* ion_cham_pre_sens_log;  // Declare pointer to logical volume of pre sensitive volume of ion chamber.
+  G4LogicalVolume* ion_cham_sens_log;      // Declare pointer to logical volume of sensitive volume of ion chamber.
+  G4LogicalVolume* ion_cham_post_sens_log; // Declare pointer to logical volume of post sensitive volume of ion chamber.
   G4LogicalVolume* exp_hall_log;
   G4LogicalVolume* sample_log;
 
   // Physical volume pointers.
-  G4VPhysicalVolume* ion_cham_shell_phys;   // Declare pointer to physical volume of shell of ion chamber.
+  G4VPhysicalVolume* ion_cham_shell_phys;     // Declare pointer to physical volume of shell of ion chamber.
+  G4VPhysicalVolume* ion_cham_pre_sens_phys;  // Declare pointer to physical volume of pre sensitive volume of ion chamber.
+  G4VPhysicalVolume* ion_cham_sens_phys;      // Declare pointer to physical volume of sensitive volume of ion chamber.
+  G4VPhysicalVolume* ion_cham_post_sens_phys; // Declare pointer to physical volume of post sensitive volume of ion chamber.
   G4VPhysicalVolume* exp_hall_phys;
   G4VPhysicalVolume* sample_phys;
 
@@ -77,7 +83,8 @@ private:
   G4ThreeVector ion_cham_pos; // Position of the ion chamber.
   G4ThreeVector sample_pos;   // Position of the sample.
 
-
+  // Specify the correction value that ensures there are no boundary clashes.
+  G4double correc_fac;
 };
 
 #endif

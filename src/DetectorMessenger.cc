@@ -15,13 +15,13 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* myDet)
 :myDetector(myDet)
 {
 
-  detector_cmd = new G4UIcmdWithAString("/geometry/detector",this);
-  detector_cmd->SetGuidance("Selects inclusion of insulated box");
-  detector_cmd->SetGuidance("Choice : on(default), off");
-  detector_cmd->SetParameterName("choice",true);
-  detector_cmd->SetDefaultValue("on");
-  detector_cmd->SetCandidates("on off");
-  detector_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  ion_cham_cmd = new G4UIcmdWithAString("/geometry/ion_cham",this);
+  ion_cham_cmd->SetGuidance("Selects inclusion of insulated box");
+  ion_cham_cmd->SetGuidance("Choice : on(default), off");
+  ion_cham_cmd->SetParameterName("choice",true);
+  ion_cham_cmd->SetDefaultValue("on");
+  ion_cham_cmd->SetCandidates("on off");
+  ion_cham_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
   sample_cmd = new G4UIcmdWithAString("/geometry/sample",this);
   sample_cmd->SetGuidance("Selects inclusion of sample");
@@ -31,12 +31,10 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* myDet)
   sample_cmd->SetCandidates("on off");
   sample_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
-  sampleX_cmd = new G4UIcmdWithADoubleAndUnit("/geometry/sample_x", this);
-  sampleX_cmd->SetGuidance("Set depth of PD.");
-  sampleX_cmd->SetParameterName("Size",false);
-  sampleX_cmd->SetRange("Size>=0.");
-  sampleX_cmd->SetUnitCategory("Length");
-  sampleX_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+  sample_pos_cmd = new G4UIcmdWith3VectorAndUnit("/geometry/sample_pos", this);
+  sample_pos_cmd->SetGuidance("Set position of the sample.");
+  sample_pos_cmd->SetParameterName("ox","oy","oz",true,true);
+  sample_pos_cmd->SetDefaultUnit("mm");
 
   update_cmd = new G4UIcmdWithoutParameter("/geometry/update",this);
   update_cmd->SetGuidance("Update detector geometry.");
@@ -50,9 +48,9 @@ DetectorMessenger::DetectorMessenger(DetectorConstruction* myDet)
 DetectorMessenger::~DetectorMessenger()
 {
 
-  delete detector_cmd;
+  delete ion_cham_cmd;
   delete sample_cmd;
-  delete sampleX_cmd;
+  delete sample_pos_cmd;
   delete update_cmd;
 
 }
@@ -61,7 +59,7 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 {
 
 
-  if(command == detector_cmd)
+  if(command == ion_cham_cmd)
     {
       myDetector->Set_Ion_Cham_Flag(newValue);
       G4cout << "### Ion chamber included." << newValue << G4endl;
@@ -73,10 +71,10 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 	  G4cout << "### Sample included." << newValue << G4endl;
     }
 
-  if(command == sampleX_cmd)
+  if(command == sample_pos_cmd)
     {
-      myDetector->Set_Sample_X(sampleX_cmd->GetNewDoubleValue(newValue));
-      G4cout << "Sample thickness changed to " << newValue << " ............................" << G4endl;
+      myDetector->Set_Sample_Pos(sample_pos_cmd->GetNew3VectorValue(newValue));
+      G4cout << "Sample position changed to " << newValue << " ............................" << G4endl;
     }
 
   if(command == update_cmd)
