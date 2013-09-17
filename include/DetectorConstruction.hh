@@ -39,25 +39,27 @@ public:
   virtual G4ThreeVector Get_Sample_Pos(){return sample_pos;};
 
   // Control updating of the geometry.
-  virtual void UpdateGeometry(); // Updates geometry.
+  virtual void Update_Geometry(); // Updates geometry.
+
+  // Set the ion chamber properties based on the name selected by the user.
+  void Set_Ion_Cham_Properties();
 
 private:
   void DefineMaterials();
-  G4VPhysicalVolume* ConstructGeometry();
+  G4VPhysicalVolume* Construct_Geometry();
 
   // Logical volume pointers.
   G4LogicalVolume* ion_cham_shell_log;     // Declare pointer to logical volume of shell of ion chamber.
-  G4LogicalVolume* ion_cham_pre_sens_log;  // Declare pointer to logical volume of pre sensitive volume of ion chamber.
   G4LogicalVolume* ion_cham_sens_log;      // Declare pointer to logical volume of sensitive volume of ion chamber.
-  G4LogicalVolume* ion_cham_post_sens_log; // Declare pointer to logical volume of post sensitive volume of ion chamber.
+  G4LogicalVolume* ion_cham_layer_log;     // Declare pointer to logical volume of arbitrary layer of ion chamber volume.
   G4LogicalVolume* exp_hall_log;
   G4LogicalVolume* sample_log;
 
+
   // Physical volume pointers.
-  G4VPhysicalVolume* ion_cham_shell_phys;     // Declare pointer to physical volume of shell of ion chamber.
-  G4VPhysicalVolume* ion_cham_pre_sens_phys;  // Declare pointer to physical volume of pre sensitive volume of ion chamber.
-  G4VPhysicalVolume* ion_cham_sens_phys;      // Declare pointer to physical volume of sensitive volume of ion chamber.
-  G4VPhysicalVolume* ion_cham_post_sens_phys; // Declare pointer to physical volume of post sensitive volume of ion chamber.
+  G4VPhysicalVolume* ion_cham_shell_phys;       // Declare pointer to physical volume of shell of ion chamber.
+  G4VPhysicalVolume* ion_cham_sens_phys;        // Declare pointer to physical volume of sensitive volume of ion chamber.
+  G4VPhysicalVolume* ion_cham_layer_param_phys; // Declare pointer to physical volume of stack parameterisation of ion chamber gases.
   G4VPhysicalVolume* exp_hall_phys;
   G4VPhysicalVolume* sample_phys;
 
@@ -68,9 +70,10 @@ private:
 
   // Material pointers
   G4Material* exp_hall_mat;          // Declare experimental hall material.
-  G4Material* ion_cham_fill_gas_mat; // Declare ion chamber fill gas material.
+  G4Material* ion_cham_gas_mat;      // Declare ion chamber fill gas material.
   G4Material* ion_cham_shell_mat;    // Define the material for the shell of the ion chamber.
   G4Material* sample_mat;            // Declare sample material.
+  G4Material* vacuum_mat;            // Declare vacuum material.
 
   // Detector messenger pointer.
   DetectorMessenger* detectorMessenger;
@@ -82,6 +85,26 @@ private:
   // Variables that will be modified by messenger file.
   G4ThreeVector ion_cham_pos; // Position of the ion chamber.
   G4ThreeVector sample_pos;   // Position of the sample.
+  G4String ion_cham_name;     // Name of the required ion chambe.
+
+  // Specify the dimensions of the external section of the Al box that is the shell of the ion chamber.
+  G4ThreeVector ion_cham_ext_mm;
+
+  // Specify the dimensions of the internal section of the Al box that is the shell of the ion chamber.
+  // The shell thickness is 10.0*mm all the way around.
+  G4double ion_cham_wall_thick_mm;
+  G4ThreeVector ion_cham_int_mm;
+
+  // Specify the dimensions of the sensitive volume of the ion chamber.
+  G4ThreeVector ion_cham_sens_mm;
+
+  // Properties of ion chamber gas layers.
+  std::vector<G4String> ion_cham_gas_mat_name_store;   // Store for the fill-gas name.
+  std::vector<G4ThreeVector> ion_cham_gas_shape_store; // Store for the dimensions of the fill gas layer.
+  std::vector<G4ThreeVector> ion_cham_gas_pos_store;   // Store for the locations of the fill gas layers.
+  std::vector<G4Material*> ion_cham_gas_mat_store;     // Store for the pointer to the fill gas material object.
+  G4int num_gas_layers;                                // Number of layers of gas.
+  std::vector<G4double> ion_cham_gas_thick_mm;         // Store for the thicknesses of the gas layers along z-axis.
 
   // Specify the correction value that ensures there are no boundary clashes.
   G4double correc_fac;

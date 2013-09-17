@@ -79,7 +79,7 @@ void DetectorMessenger::SetNewValue(G4UIcommand* command,G4String newValue)
 
   if(command == update_cmd)
     {
-      myDetector->UpdateGeometry();
+      myDetector->Update_Geometry();
       G4cout << "Detector geometry updated ............................" << G4endl;
     }
 
