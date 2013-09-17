@@ -187,6 +187,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
     // Set the visualisation attributes for the experimental hall.
     exp_hall_log->SetVisAttributes (G4VisAttributes::Invisible);
 
+    // Generic cylinder parameters used throughout the code.
+    gener_cyl_r = 0.0;        // Inner radius..
+    gener_cyl_SP = 0.0*deg;   // Tube segment.
+    gener_cyl_EP = 360.0*deg; // Delta angle.
 
     // Switch the ion chamber on/off
 
@@ -211,20 +215,33 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
         // Construct the Al shell of the ion chamber.  This will be the subtraction of the internal box from the external box.
         ion_cham_shell = new G4SubtractionSolid("ion_cham_shell", ion_cham_shell, ion_cham_int, 0, G4ThreeVector(0.0*mm, 0.0*mm, 0.0*mm));
 
+        // Cut holes in the front and back walls for the beam to pass through.
+        // Define cut in entrance window.
+        G4Tubs* ion_cham_ent_cut = new G4Tubs("depdet_be_cut", gener_cyl_r, ion_cham_ent_win_rad_mm, (ion_cham_wall_thick_mm * 0.5) + correc_fac, gener_cyl_SP, gener_cyl_EP);
+
+        // Define cut in entrance window.
+        G4Tubs* ion_cham_exit_cut = new G4Tubs("depdet_be_cut", gener_cyl_r, ion_cham_exit_win_rad_mm, (ion_cham_wall_thick_mm * 0.5) + correc_fac, gener_cyl_SP, gener_cyl_EP);
+
+        // Remove the entrance window from the shell.
+        ion_cham_shell = new G4SubtractionSolid("ion_cham_shell", ion_cham_shell, ion_cham_ent_cut, 0, G4ThreeVector(0.0*mm, 0.0*mm, -(0.5 * ion_cham_ext_mm.getZ()) + (0.5 * ion_cham_wall_thick_mm)));
+
+        // Remove the exit window from the shell.
+        ion_cham_shell = new G4SubtractionSolid("ion_cham_shell", ion_cham_shell, ion_cham_exit_cut, 0, G4ThreeVector(0.0*mm, 0.0*mm, +(0.5 * ion_cham_ext_mm.getZ()) - (0.5 * ion_cham_wall_thick_mm)));
+
         // Construct the logical volume for the shell of the ion chamber.
         ion_cham_shell_log = new G4LogicalVolume(ion_cham_shell, ion_cham_shell_mat,"ion_cham_shell_log",0,0,0);
 
         // Construct the physical volume for the shell of the ion chamber.
         ion_cham_shell_phys = new G4PVPlacement(0,                  // Rotation.
-        								        ion_cham_pos,    // (x,y,z).
+        								        ion_cham_pos,       // (x,y,z).
         								        ion_cham_shell_log, // Logical volume.
         								        "ion_cham_phys",    // Name.
         								        exp_hall_log,       // Mother volume.
         								        false,              // No boolean operations.
         								         0);                // Copy number.
 
-
-        // Construct a vacuum container that will act as a mother volume for the parameterised layers.
+        // Now perform the parameterisation of the internal volume of the ion chamber.
+        // First, construct a vacuum container that will act as a mother volume for the parameterised layers.
 		G4Box* ion_cham_sens = new G4Box("ion_cham_sens", ion_cham_sens_mm.getX() * 0.5,
 				                                          ion_cham_sens_mm.getY() * 0.5,
 				                                          ion_cham_sens_mm.getZ() * 0.5);
@@ -270,8 +287,8 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
         G4VisAttributes* ion_cham_shell_vis_att = new G4VisAttributes(G4Colour(0.0,0.0,1.0));
         ion_cham_shell_log->SetVisAttributes(ion_cham_shell_vis_att);
 
-        G4VisAttributes* ion_cham_sens_vis_att = new G4VisAttributes(G4Colour(0.3,0.0,1.0));
-        ion_cham_sens_log->SetVisAttributes(ion_cham_sens_vis_att);
+        G4VisAttributes* ion_cham_layer_vis_att = new G4VisAttributes(G4Colour(0.3,0.0,1.0));
+        ion_cham_layer_log->SetVisAttributes(ion_cham_layer_vis_att);
 
         // Make the ion chamber layers sensitive volumes.
         if (! ion_cham_sd)
@@ -442,7 +459,14 @@ void DetectorConstruction::Set_Ion_Cham_Properties()
         // Store the positions of the three layers.
         ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (0.5 * ion_cham_gas_shape_store[0].getZ()) + (0.5 * correc_fac)));
         ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (0.5 * ion_cham_gas_shape_store[1].getZ()) + (1.0 * correc_fac)));
-        ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (0.5 * ion_cham_gas_shape_store[0].getZ()) + (1.5 * correc_fac)));
+        ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (ion_cham_gas_shape_store[1].getZ()) + (0.5 * ion_cham_gas_shape_store[2].getZ()) + (1.5 * correc_fac)));
+
+        // Define the dimensions of the entrance window.
+        ion_cham_ent_win_rad_mm = 6.25*mm;  // Radius of entrance window in mm.
+
+        // Define the dimensions of the entrance window.
+        ion_cham_exit_win_rad_mm = 20.0*mm; // Radius of exit window in mm.
+
 
 	    break;
 	  case 2:

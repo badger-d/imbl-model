@@ -98,6 +98,15 @@ private:
   // Specify the dimensions of the sensitive volume of the ion chamber.
   G4ThreeVector ion_cham_sens_mm;
 
+  // Specify the dimensions of the entrance / exit windows.
+  G4double ion_cham_ent_win_rad_mm;  // Radius of entrance window in mm.
+  G4double ion_cham_exit_win_rad_mm; // Radius of exit window in mm.
+
+  // Generic cylinder parameters.
+  G4double gener_cyl_r;  // Inner radius..
+  G4double gener_cyl_SP; // Tube segment.
+  G4double gener_cyl_EP; // Delta angle.
+
   // Properties of ion chamber gas layers.
   std::vector<G4String> ion_cham_gas_mat_name_store;   // Store for the fill-gas name.
   std::vector<G4ThreeVector> ion_cham_gas_shape_store; // Store for the dimensions of the fill gas layer.
