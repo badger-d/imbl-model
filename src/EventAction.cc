@@ -115,21 +115,73 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 	    Time_Sort(ion_cham_hits, hit_times, time_sort_all_hits);
 
 	    // Process the interactions in the event.
-	    Process_Ion_Cham_Interacs(ion_cham_hits)
-
-//	    for (G4int i = 0; i < time_sort_all_hits.size(); i++) {
-//	        DetectorHits* sort_hit = time_sort_all_hits[i];
-//	        sort_hit->GetDeltaEnergy();
-//	        G4cout << sort_hit->GetDeltaEnergy() << G4endl;
-//	    }
+	    Process_Ion_Cham_Interacs(ion_cham_hits);
 	}
 }
 
-void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*>	&all_hits)
+void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*>	&ion_cham_hits)
 {
-    G4cout << "------------- HIT ION CHAMBER -------------" << G4endl;
+    //G4cout << "------------- HIT ION CHAMBER -------------" << G4endl;
+    G4double total_energy = 0.0;
+    for (G4int i = 0; i < ion_cham_hits.size(); i++) {
+
+    	// Get the current hit.
+    	DetectorHits* ion_cham_hit = ion_cham_hits[i];
+
+    	// Add the hit energy to the total energy.
+    	total_energy += ion_cham_hit->GetEnergyDep();
+
+    	// Test if the particle is a photon or electron.
+    	G4bool is_photon = Is_Photon(ion_cham_hit->GetParticle());
+
+    	if (is_photon){
+
+    		// Test if the photon if a primary or fluorescence photon.
+    		G4bool is_fluor  = Is_Fluor(ion_cham_hit->GetTrackID(), ion_cham_hit->GetParentID());
+
+    		if (not is_fluor){
+
+    			// Must be a primary photon, so add its interaction to the list.
+    			G4ThreeVector phot_inteac_pos = ion_cham_hit->GetPosition();
+    			Dump_Prim_Photon_Interac_Pos(phot_inteac_pos.getX(), phot_inteac_pos.getY(), phot_inteac_pos.getZ());
+    		}
+    	}
+    }
 }
 
+void EventAction::Dump_Prim_Photon_Interac_Pos(const G4double x,  const G4double y, const G4double z){
+
+	// Get the output file pointer.
+  	out_file_ptr = run->Get_File_Ptr();
+
+  	// Write the position to file.
+  	*out_file_ptr << x << " " << y << " " << z << G4endl;
+}
+
+bool EventAction::Is_Photon(const G4String particle_ref){
+
+    // Determine whether or not the photon is a fluorescence or not (primary).
+    if (particle_ref == "gamma"){
+    	return true;
+    }
+    else if (particle_ref == "e-"){
+    	// It must be an electron as we only deal with photons and electrons in these sims.
+    	return false;
+    }
+    else{
+    	// Safety net in case something strange happens
+    	abort();
+    }
+}
+
+bool EventAction::Is_Fluor(const unsigned int track, const unsigned int parent){
+
+	// Determine whether or not the photon is a fluorescence or not (primary).
+    if (track == 1 && parent == 0){
+    	return false;
+    }
+    return true;
+}
 
 void EventAction::Vectorize_Hits(vector<DetectorHits*>	&all_hits, DetectorHitsCollection* hits_col, vector<G4double>	&hit_times)
 {

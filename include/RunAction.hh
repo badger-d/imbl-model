@@ -21,22 +21,37 @@ class RunAction : public G4UserRunAction
 
   virtual void Set_File(G4String);
 
-  virtual void Store_File_Ptr(std::ofstream &val){dataOut_ptr = &(val);};
-  virtual G4String Get_File_Name(){return fileName;};
-  virtual ofstream* Get_File_Ptr(){return dataOut_ptr;};
+  // Store the pointer to the output file.
+  virtual void Store_File_Ptr(std::ofstream &val){data_out_ptr = &(val);};
+
+  // Get the file name.
+  virtual G4String Get_File_Name(){return file_name;};
+
+  // Store the data-file name.
+  virtual void Store_Data_File_Name(G4String val){stored_data_file_name = val;};
+
+  // Get the output file pointer.
+  virtual ofstream* Get_File_Ptr(){return data_out_ptr;}
 
   private:
     DetectorConstruction* detector;
     PrimaryGeneratorAction* primary;
     RunMessenger* messenger;
 
+    // Pointer to the output file pointer.
+    ofstream* data_out_ptr;
 
-    G4String fileBase;
-    G4String fileExt;
+    // Pointer to the output file.
+    ofstream* data_out;
 
-    G4String fileName;
-    ofstream* dataOut;
-    ofstream* dataOut_ptr;
+    G4String data_file_name;
+
+    G4String stored_data_file_name;
+
+    G4String file_base;
+    G4String file_ext;
+
+    G4String file_name;
 
 
 };

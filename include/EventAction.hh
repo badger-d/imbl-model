@@ -30,13 +30,22 @@ public:
 private:
 
   // Process the interactions in the ion chamber.
-  void Process_Ion_Cham_Interacs(std::vector<DetectorHits*> &all_hits);
+  void Process_Ion_Cham_Interacs(std::vector<DetectorHits*> &ion_cham_hits);
 
   // Method that appends hits to vector.
   void Vectorize_Hits(std::vector<DetectorHits*> &all_hits, DetectorHitsCollection*, std::vector<G4double> &hit_times);
 
   // Method that time sorts the vector of interaction hits.
   void Time_Sort(std::vector<DetectorHits*>	&all_hits, std::vector<G4double> &hit_times, std::vector<DetectorHits*> &time_sort_all_hits);
+
+  // Determine whether or not the photon is a fluorescence or not (primary).
+  bool Is_Fluor(const unsigned int track, const unsigned int parent);
+
+  // Determine whether the particle is a photon or electron.
+  bool Is_Photon(const G4String particle_ref);
+
+  // Write the primary interaction location to file.
+  void Dump_Prim_Photon_Interac_Pos(const G4double x,  const G4double y, const G4double z);
 
   PrimaryGeneratorAction* primary;
   RunAction* run;

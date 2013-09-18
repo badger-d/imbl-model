@@ -24,32 +24,43 @@ RunAction::~RunAction()
 
 void RunAction::Set_File(G4String val)
 {
-    fileBase = val;
+    // Store the base file name.
+	file_base = val;
 
-	// Prep the data file.
-	fileExt = ".det";
-	fileName = fileBase;
-	fileName.insert(fileName.length(), fileExt);
-	dataOut = new ofstream(fileName);
-	Store_File_Ptr(*dataOut);
+	// Store the file extension.
+	file_ext = ".det";
+
+	// Combine the base path / name and extension.
+	data_file_name = file_base;
+	data_file_name.insert(data_file_name.length(), file_ext);
+
+	// Get new output file stream.
+	data_out = new ofstream(data_file_name);
+
+	// Store the file pointer.
+	Store_File_Ptr(*data_out);
+
+	// Store the file name.
+	Store_Data_File_Name(data_file_name);
 }
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-
+	file_base = "/home/dimmockm/test";
+	Set_File(file_base);
 }
 
 //----------------------------------------------------------------------------
 
 void RunAction::EndOfRunAction(const G4Run*)
 {
-	if (fileBase != ""){
+	if (file_base != ""){
 
 		// Close the data file.
-		dataOut->close();
+		data_out->close();
 
 		// Delete the data file.
-		delete dataOut;
+		delete data_out;
 	}
 }
 
