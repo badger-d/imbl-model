@@ -64,13 +64,13 @@ private:
   G4VPhysicalVolume* sample_phys;
 
   // Sensitive detector pointers.
-  SensitiveDet* exp_hall_sd; // Declare pointer to experimental hall.
-  SensitiveDet* ion_cham_sd; // Declare pointer to ion chamber sensitive detector.
-  SensitiveDet* sample_sd;   // Declare pointer to sample sensitive detector.
+  SensitiveDet* exp_hall_sd;       // Declare pointer to experimental hall.
+  SensitiveDet* ion_cham_layer_sd; // Declare pointer to ion chamber layer sensitive detectors.
+  SensitiveDet* ion_cham_shell_sd; // Declare pointer to ion chamber shell sensitive detector.
+  SensitiveDet* sample_sd;         // Declare pointer to sample sensitive detector.
 
   // Material pointers
   G4Material* exp_hall_mat;          // Declare experimental hall material.
-  G4Material* ion_cham_gas_mat;      // Declare ion chamber fill gas material.
   G4Material* ion_cham_shell_mat;    // Define the material for the shell of the ion chamber.
   G4Material* sample_mat;            // Declare sample material.
   G4Material* vacuum_mat;            // Declare vacuum material.

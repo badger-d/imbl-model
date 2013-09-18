@@ -40,12 +40,13 @@ DetectorConstruction::DetectorConstruction()
   Set_Sample_Flag(sample_flag);
 
   // Sensitive volume pointers.
-  exp_hall_sd = 0; // Initialise pointer to experimental hall sensitive detector.
-  ion_cham_sd = 0; // Initialise pointer to ion chamber sensitive detector.
-  sample_sd = 0;   // Initialise pointer to sample sensitive detector.
+  exp_hall_sd = 0;       // Initialise pointer to experimental hall sensitive detector.
+  ion_cham_layer_sd = 0; // Initialise pointer to ion chamber layer sensitive detectors.
+  ion_cham_shell_sd = 0; // Initialise pointer to ion chamber shell sensitive detector.
+  sample_sd = 0;         // Initialise pointer to sample sensitive detector.
 
   // Initialise the position of the ion chamber.
-  ion_cham_pos = G4ThreeVector(0.0*mm, 0.0*mm, 2.0*mm);
+  ion_cham_pos = G4ThreeVector(0.0*mm, 0.0*mm, 0.0*mm);
   
   // Initialise the thickness of the sample.
   sample_pos = G4ThreeVector(2.0*mm, 0.0*mm, 0.0*mm);
@@ -142,7 +143,6 @@ void DetectorConstruction::DefineMaterials()
    G4Material* Vacuum = new G4Material(name="Vacuum", z=1., a=1.01*g/mole, density, kStateGas, pressure, temperature);
 
    // Specify the default materials used in the experimental hall.
-   ion_cham_gas_mat = Air;  // Define fill gas for the ion chambers.
    ion_cham_shell_mat = Al; // Define the material for the shell of the ion chamber.
    exp_hall_mat = Air;      // Define experimental hall material.
    sample_mat = Air;        // Define sample material.
@@ -160,9 +160,9 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
     // Experimental hall (world volume).
     // ------------------------------------- //
 
-    G4double exp_hall_x_m = .6*m; // World depth.
-    G4double exp_hall_y_m = .5*m; // World width.
-    G4double exp_hall_z_m = .5*m; // World height.
+    G4double exp_hall_x_m = 2.*m; // World depth.
+    G4double exp_hall_y_m = 2.*m; // World width.
+    G4double exp_hall_z_m = 2.*m; // World height.
 
     // Define the parameters of the box that is the experimental hall.
     G4Box* exp_hall_box = new G4Box("exp_hall_box", exp_hall_x_m * 0.5, exp_hall_y_m * 0.5, exp_hall_z_m * 0.5);
@@ -254,7 +254,7 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
 						                       G4ThreeVector(0.0, 0.0, 0.0), // (x,y,z).
 						                       ion_cham_sens_log,            // Logical volume.
 				        					   "ion_cham__sens_phys",        // Name.
-				        					   ion_cham_shell_log,           // Mother volume.
+				        					   exp_hall_log,                 // Mother volume.
 		            						   false,                        // No boolean operations.
 				        					   0);                           // Copy number.
 
@@ -270,10 +270,10 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
 
 		// Create each instance of a section of the sensitive volume.
 
-		G4VPVParameterisation* ion_cham_layer_param = new StackParameterisation(num_gas_layers,           // Number of layers.
-				                                                               ion_cham_gas_mat_store,    // Vector of material pointers.
-				                                                               ion_cham_gas_pos_store,    // Vector of position vectors.
-				                                                               ion_cham_gas_shape_store); // Vector of shape vectors.
+		G4VPVParameterisation* ion_cham_layer_param = new StackParameterisation(num_gas_layers,            // Number of layers.
+				                                                                ion_cham_gas_mat_store,    // Vector of material pointers.
+				                                                                ion_cham_gas_pos_store,    // Vector of position vectors.
+				                                                                ion_cham_gas_shape_store); // Vector of shape vectors.
 
 		// Construct the physical volume for the stack of layers of gas in the ion chamber.
 		ion_cham_layer_param_phys = new G4PVParameterised("ion_cham_layer_param_phys", // Name.
@@ -291,13 +291,20 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
         ion_cham_layer_log->SetVisAttributes(ion_cham_layer_vis_att);
 
         // Make the ion chamber layers sensitive volumes.
-        if (! ion_cham_sd)
+        if (! ion_cham_layer_sd)
           {
-        	ion_cham_sd = new SensitiveDet("/detector/ion_cham");
-            SDman->AddNewDetector(ion_cham_sd);
+        	ion_cham_layer_sd = new SensitiveDet("/detector/ion_cham_layer");
+            SDman->AddNewDetector(ion_cham_layer_sd);
           }
-        ion_cham_layer_log->SetSensitiveDetector(ion_cham_sd);
+        ion_cham_layer_log->SetSensitiveDetector(ion_cham_layer_sd);
 
+        // Make the ion chamber shell a sensitive volumes.
+        if (! ion_cham_shell_sd)
+          {
+        	ion_cham_shell_sd = new SensitiveDet("/detector/ion_cham_shell");
+            SDman->AddNewDetector(ion_cham_shell_sd);
+          }
+        ion_cham_shell_log->SetSensitiveDetector(ion_cham_shell_sd);
 
       }
     else
@@ -457,9 +464,10 @@ void DetectorConstruction::Set_Ion_Cham_Properties()
 				                                         ion_cham_gas_thick_mm[2] - correc_fac));
 
         // Store the positions of the three layers.
-        ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (0.5 * ion_cham_gas_shape_store[0].getZ()) + (0.5 * correc_fac)));
-        ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (0.5 * ion_cham_gas_shape_store[1].getZ()) + (1.0 * correc_fac)));
-        ion_cham_gas_pos_store.push_back(G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (ion_cham_gas_shape_store[1].getZ()) + (0.5 * ion_cham_gas_shape_store[2].getZ()) + (1.5 * correc_fac)));
+		// These positions are absolute positions in 3D space and so must include the "ion_cham_pos" parameter.
+        ion_cham_gas_pos_store.push_back(ion_cham_pos + G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (0.5 * ion_cham_gas_shape_store[0].getZ()) + (0.5 * correc_fac)));
+        ion_cham_gas_pos_store.push_back(ion_cham_pos + G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (0.5 * ion_cham_gas_shape_store[1].getZ()) + (1.0 * correc_fac)));
+        ion_cham_gas_pos_store.push_back(ion_cham_pos + G4ThreeVector(0.0, 0.0, -(0.5 * ion_cham_sens_mm.getZ()) + (ion_cham_gas_shape_store[0].getZ()) + (ion_cham_gas_shape_store[1].getZ()) + (0.5 * ion_cham_gas_shape_store[2].getZ()) + (1.5 * correc_fac)));
 
         // Define the dimensions of the entrance window.
         ion_cham_ent_win_rad_mm = 6.25*mm;  // Radius of entrance window in mm.
@@ -470,7 +478,7 @@ void DetectorConstruction::Set_Ion_Cham_Properties()
 
 	    break;
 	  case 2:
-	    cout << "You selected LEFAC ...\n";
+	    cout << "You selected MEFAC ...\n";
 	    break;
 	  default:
 	    cout<<"Error, bad input, quitting\n";

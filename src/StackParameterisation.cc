@@ -32,6 +32,7 @@ void StackParameterisation::ComputeDimensions(G4Box& box, const G4int copyNo, co
 	box.SetXHalfLength(_shape_store[copyNo].getX() * 0.5);
 	box.SetYHalfLength(_shape_store[copyNo].getY() * 0.5);
 	box.SetZHalfLength(_shape_store[copyNo].getZ() * 0.5);
+
 }
 
 G4Material* StackParameterisation::ComputeMaterial(const G4int copyNo, G4VPhysicalVolume*, const G4VTouchable* parentTouch)
