@@ -4,6 +4,15 @@
 /run/verbose 2
 /run/initialize
 
+#------------------ Define physics ------------------#
+
+/process/em/deexcitation world true true true
+/process/em/pixe true
+/process/em/auger true
+/process/em/fluo true
+/process/em/pixeXSmodel
+/process/eLoss/minKinEnergy 100 eV
+
 #------------------ Define detector ------------------#
 
 /geometry/ion_cham on
@@ -23,5 +32,4 @@
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 500
-
+/run/beamOn 5000

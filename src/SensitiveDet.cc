@@ -34,7 +34,7 @@ void SensitiveDet::Initialize(G4HCofThisEvent* HCE)
 G4bool SensitiveDet::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 {
 
-particle = aStep->GetTrack()->GetDefinition()->GetParticleName();
+   particle = aStep->GetTrack()->GetDefinition()->GetParticleName();
    parentID = aStep->GetTrack()->GetParentID();
    G4ThreeVector delta_energy(aStep->GetDeltaEnergy());
 
@@ -50,7 +50,6 @@ particle = aStep->GetTrack()->GetDefinition()->GetParticleName();
    newHit->SetTrackID(aStep->GetTrack()->GetTrackID());
    newHit->SetParentID(parentID);
    newHit->SetParticle(particle);
-
    newHit->SetStepLength(aStep->GetTrack()->GetStepLength());
    newHit->SetPosition(aStep->GetTrack()->GetPosition());
    newHit->SetDeltaPosition(aStep->GetDeltaPosition());
@@ -62,7 +61,6 @@ particle = aStep->GetTrack()->GetDefinition()->GetParticleName();
    newHit->SetGlobalTranslation(aStep->GetPreStepPoint()->GetTouchable()->GetTranslation());
    newHit->SetLocalTranslation(aStep->GetPreStepPoint()->GetPhysicalVolume()->GetObjectTranslation());
    newHit->SetCopyNumber(aStep->GetPreStepPoint()->GetTouchableHandle()->GetCopyNumber());
-
    newHit->SetPreProcess("None");
 
      const G4VProcess* proc = aStep->GetTrack()->GetCreatorProcess();
