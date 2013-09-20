@@ -23,53 +23,44 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: PhysicsList.hh,v 1.11 2009-03-06 18:04:23 maire Exp $
+// $Id: PhysicsListMessenger.hh,v 1.9 2009-03-06 18:04:23 maire Exp $
 // GEANT4 tag $Name: not supported by cvs2svn $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-#ifndef PhysicsList_h
-#define PhysicsList_h 1
+#ifndef PhysicsListMessenger_h
+#define PhysicsListMessenger_h 1
 
-#include "G4VModularPhysicsList.hh"
+#include "G4UImessenger.hh"
 #include "globals.hh"
 
-class G4VPhysicsConstructor;
-class PhysicsListMessenger;
+class PhysicsList;
+class G4UIdirectory;
+class G4UIcmdWithAString;
+class G4UIcmdWithADoubleAndUnit;
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-class PhysicsList: public G4VModularPhysicsList
+class PhysicsListMessenger: public G4UImessenger
 {
 public:
-  PhysicsList();
-  virtual ~PhysicsList();
-
-  void ConstructParticle();
-        
-  void AddPhysicsList(const G4String& name);
+  
+  PhysicsListMessenger(PhysicsList* );
+  ~PhysicsListMessenger();
     
-  void ConstructProcess();    
-  void AddDecay();
-  void AddStepMax();       
-    
-  void SetCuts();
-  void SetCutForGamma(G4double);
-  void SetCutForElectron(G4double);
-  void SetCutForPositron(G4double);
+  void SetNewValue(G4UIcommand*, G4String);
     
 private:
-
-  PhysicsListMessenger* pMessenger; 
-
-  G4String emName;
-  G4VPhysicsConstructor*  emPhysicsList;
+  
+  PhysicsList* pPhysicsList;
     
-  G4double cutForGamma;
-  G4double cutForElectron;
-  G4double cutForPositron;    
-
+  G4UIdirectory*             physDir;    
+  G4UIcmdWithAString*        pListCmd;
+  G4UIcmdWithADoubleAndUnit* gammaCutCmd;
+  G4UIcmdWithADoubleAndUnit* electCutCmd;
+  G4UIcmdWithADoubleAndUnit* protoCutCmd;    
+  G4UIcmdWithADoubleAndUnit* allCutCmd;        
 };
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......

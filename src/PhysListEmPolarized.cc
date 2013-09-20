@@ -23,13 +23,13 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-// $Id: PhysListEmStandard.cc,v 1.24 2009-11-15 22:10:03 maire Exp $
+// $Id: PhysListEmPolarized.cc,v 1.24 2009-11-15 22:10:03 maire Exp $
 // GEANT4 tag $Name: not supported by cvs2svn $
 //
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo...... 
 
-#include "PhysListEmStandard.hh"
+#include "PhysListEmPolarized.hh"
 #include "G4ParticleDefinition.hh"
 #include "G4ProcessManager.hh"
 #include "G4PhysicsListHelper.hh"
@@ -60,6 +60,10 @@
 #include "G4UAtomicDeexcitation.hh"
 
 // Livermore replacements
+#include "G4LivermorePolarizedPhotoElectricModel.hh"
+#include "G4LivermorePolarizedComptonModel.hh"
+#include "G4LivermorePolarizedGammaConversionModel.hh"
+#include "G4LivermorePolarizedRayleighModel.hh"
 
 #include "G4LivermorePhotoElectricModel.hh"
 #include "G4LivermoreComptonModel.hh"
@@ -69,22 +73,22 @@
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysListEmStandard::PhysListEmStandard(const G4String& name)
+PhysListEmPolarized::PhysListEmPolarized(const G4String& name)
    :  G4VPhysicsConstructor(name)
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-PhysListEmStandard::~PhysListEmStandard()
+PhysListEmPolarized::~PhysListEmPolarized()
 {}
 
 //....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo......
 
-void PhysListEmStandard::ConstructProcess()
+void PhysListEmPolarized::ConstructProcess()
 {
   G4PhysicsListHelper* ph = G4PhysicsListHelper::GetPhysicsListHelper();
   
-  // Add standard EM Processes
+  // Add Polarized EM Processes
   //
   theParticleIterator->reset();
   while( (*theParticleIterator)() ){
@@ -94,16 +98,23 @@ void PhysListEmStandard::ConstructProcess()
     if (particleName == "gamma") {
 
       G4RayleighScattering* rs = new G4RayleighScattering;
-      rs->SetEmModel(new G4LivermoreRayleighModel());
+      //rs->SetEmModel(new G4LivermoreRayleighModel());
+      rs->SetEmModel(new G4LivermorePolarizedRayleighModel());
       ph->RegisterProcess(rs, particle);
+
       G4PhotoElectricEffect* pe = new G4PhotoElectricEffect;
-      pe->SetEmModel(new G4LivermorePhotoElectricModel());
+      //pe->SetEmModel(new G4LivermorePhotoElectricModel());
+      pe->SetEmModel(new G4LivermorePolarizedPhotoElectricModel());
       ph->RegisterProcess(pe, particle);            
+
       G4ComptonScattering* cs   = new G4ComptonScattering;
-      cs->SetEmModel(new G4LowEPComptonModel());
+      //cs->SetEmModel(new G4LowEPComptonModel());
+      cs->SetEmModel(new G4LivermorePolarizedComptonModel());
       ph->RegisterProcess(cs, particle);
+
       G4GammaConversion* conv = new G4GammaConversion();
-      conv->SetEmModel(new G4LivermoreGammaConversionModel());
+      //conv->SetEmModel(new G4LivermoreGammaConversionModel());
+      conv->SetEmModel(new G4LivermorePolarizedGammaConversionModel());
       ph->RegisterProcess(conv, particle);
      
     } else if (particleName == "e-") {
