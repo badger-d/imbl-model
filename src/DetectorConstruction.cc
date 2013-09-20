@@ -121,6 +121,10 @@ void DetectorConstruction::DefineMaterials()
 
    // The materials are defined below to allow impurities to be added.
 
+   // C
+   G4Material* C = new G4Material(name="C", 2.26*g/cm3, ncomponents=1);
+   C->AddElement(elC, fractionmass=1.0);
+
    // Al
    G4Material* Al = new G4Material(name="Al", 2.7*g/cm3, ncomponents=1);
    Al->AddElement(elAl, fractionmass=1.0);
@@ -434,6 +438,7 @@ void DetectorConstruction::Set_Ion_Cham_Properties()
 
 	    // Store the number of layers.
 	    num_gas_layers = 3;
+	    Set_Num_Gas_Layers(num_gas_layers);
 
         // Store the thicknesses of the layers.
         ion_cham_gas_thick_mm.push_back(43.0*mm);

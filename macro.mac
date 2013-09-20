@@ -2,10 +2,15 @@
 
 /control/verbose 2
 /run/verbose 2
-/run/initialize
 
 #------------------ Define physics ------------------#
-
+/testem/phys/addPhysics option
+/testem/phys/setGCut 0.1 um
+/testem/phys/setECut 0.1 um
+/cuts/setLowEdge 250 eV
+#
+/run/initialize
+#
 /process/em/deexcitation world true true true
 /process/em/pixe true
 /process/em/auger true
@@ -22,9 +27,9 @@
 
 /gun/isotropy forward
 /gun/origin 0.0 0.0 -200.0 mm
-/gun/inpenergy 5.0 keV
+/gun/inpenergy 20.0 keV
 
-/control/execute vis.mac
+#/control/execute vis.mac
 
 #------------------ Define output file locations ------------------#
 
@@ -32,4 +37,4 @@
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 5000
+/run/beamOn 50000

@@ -27,16 +27,25 @@ public:
 
   G4VPhysicalVolume* Construct();
 
-  // Control inclusion of housing structures [on, off]
+  // Set inclusion of the beam-line components [on, off]
   virtual void Set_Ion_Cham_Flag(G4String val){ion_cham_flag = val;};
   virtual void Set_Sample_Flag(G4String val){sample_flag = val;};
   
+  // Get inclusion of the beam-line components [on, off]
   virtual G4String Get_Ion_Cham_Flag(){return ion_cham_flag;};
   virtual G4String Get_Sample_Flag(){return sample_flag;};
 
-  // Control the sample thickness.
+  // Set the sample position.
   virtual void Set_Sample_Pos(G4ThreeVector val){sample_pos = val;}; // Collimator frame depth.
+
+  // Get the sample position.
   virtual G4ThreeVector Get_Sample_Pos(){return sample_pos;};
+
+  // Set the number of gas layers in the ionisation chamber.
+  virtual void Set_Num_Gas_Layers(unsigned int val){num_gas_layers = val;}; // Collimator frame depth.
+
+  // Get the number of gas layers in the ionisation chamber.
+  virtual unsigned int Get_Num_Gas_Layers(){return num_gas_layers;};
 
   // Control updating of the geometry.
   virtual void Update_Geometry(); // Updates geometry.
@@ -112,7 +121,7 @@ private:
   std::vector<G4ThreeVector> ion_cham_gas_shape_store; // Store for the dimensions of the fill gas layer.
   std::vector<G4ThreeVector> ion_cham_gas_pos_store;   // Store for the locations of the fill gas layers.
   std::vector<G4Material*> ion_cham_gas_mat_store;     // Store for the pointer to the fill gas material object.
-  G4int num_gas_layers;                                // Number of layers of gas.
+  unsigned int num_gas_layers;                         // Number of layers of gas.
   std::vector<G4double> ion_cham_gas_thick_mm;         // Store for the thicknesses of the gas layers along z-axis.
 
   // Specify the correction value that ensures there are no boundary clashes.
