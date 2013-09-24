@@ -1,6 +1,3 @@
-// RunMessenger.hh,v 1.3 2002/12/13 11:34:28 gunter Exp $
-// --------------------------------------------------------------
-//
 #ifndef RunMessenger_h
 #define RunMessenger_h 1
 
@@ -18,13 +15,13 @@ class RunMessenger: public G4UImessenger
     RunMessenger(RunAction* runinf);
     ~RunMessenger();
 
-    virtual void SetNewValue(G4UIcommand * command, G4String newValues);
+    virtual void SetNewValue(G4UIcommand * command,G4String newValues);
 
   private:
     RunAction* target;
-
-    G4UIcmdWithAString*     file_cmd;
+    //commands
+    G4UIcmdWithAString*     file1Cmd;
+    G4UIcmdWithAString*     descriptionCmd;
 };
 
 #endif
-

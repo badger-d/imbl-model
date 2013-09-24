@@ -19,6 +19,20 @@ class RunAction : public G4UserRunAction
   virtual void BeginOfRunAction(const G4Run*);
   virtual void EndOfRunAction(const G4Run*);
 
+
+  virtual void Set_Description(G4String);
+
+  // Store the pointer to the header file.
+  virtual void Store_Head_File_Name(G4String val){stored_head_fname = val;};
+
+  virtual G4String Get_Head_File_Name(){return stored_head_fname;};
+
+  virtual G4String Get_Data_File_Name(){return stored_data_fname;};
+
+  virtual  void Store_Experiment_Name(G4String val){stored_exp_name = val;};
+
+  virtual  G4String Get_Experiment_Name(){return stored_exp_name;};
+
   virtual void Set_File(G4String);
 
   // Store the pointer to the output file.
@@ -37,6 +51,10 @@ class RunAction : public G4UserRunAction
     DetectorConstruction* detector;
     PrimaryGeneratorAction* primary;
     RunMessenger* messenger;
+
+    G4String stored_head_fname;
+    G4String stored_data_fname;
+    G4String stored_exp_name;
 
     // Pointer to the output file pointer.
     ofstream* data_out_ptr;
