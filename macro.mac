@@ -33,7 +33,8 @@
 
 #------------------ Define output file locations ------------------#
 
-/runinf/name output
+/runinf/description Parallel source incident on LEFAC at 20.0 keV.
+/runinf/fname_conv ion_cham_coeff
 
 #------------------ Define number of events ------------------#
 

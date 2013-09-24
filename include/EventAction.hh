@@ -57,10 +57,22 @@ private:
   void Dump_Prim_Photon_Interac_Pos(const G4double x,  const G4double y, const G4double z);
 
   // Write the energies deposited between the plates to file.
-  void Dump_Photon_Interac_Energy(const G4double dump_energy_keV,  const unsigned int tag);
+  void Dump_Photon_Interac_Energy(const G4double dump_energy_keV,  const signed int output_flag);
 
-  // Function for collecting the energies deposited in the correct ion chamber layer.
-  void Sum_Energies(vector<DetectorHits*> &all_hits, G4double &total_energy_keV, unsigned int layer, G4String volume);
+  // Function for collecting the energies that are deposited in the correct ion chamber layer.
+  void Sum_Energies_In_Hit_Vol(std::vector<DetectorHits*> &all_hits, G4double &total_energy_keV, unsigned int layer, G4String volume);
+
+  // Function for collecting all other energies are not deposited in the sensitive ion chamber layer.
+  void Sum_Energies_Not_In_Hit_Vol(std::vector<DetectorHits*> &all_hits, G4double &total_energy_keV, unsigned int layer, G4String volume);
+
+  // Check if all of the electron deposits were in the gas.
+  bool All_Electron_Interacs_In_Sens(std::vector<DetectorHits*> &all_hits);
+
+  // Get the progeny for a given track ID.
+  void Get_Progeny(std::vector<DetectorHits*> &all_hits, G4int track_to_find, std::vector<G4int> &daughter_tracks);
+
+  // Determine whether or not a scatter has occurred.
+  bool Has_Scat(std::vector<DetectorHits*> &phot_hits);
 
   PrimaryGeneratorAction* primary;
   RunAction* run;
@@ -78,9 +90,12 @@ private:
 
   G4int event_id;  // Event ID counter.
 
-  G4double energy_keV_dep_plates_prim; // Total energy deposited  for primary photon interaction between the ionisation plates for the current event.
-  G4double energy_keV_dep_plates_scat; // Total energy deposited  for scattered photon interaction between the ionisation plates for the current event.
-  G4double energy_keV_dep_plates_fluor; // Total energy deposited  for scattered photon interaction between the ionisation plates for the current event.
+  G4double energy_keV_dep_plates_prim_vola;  // Total energy deposited for primary photon interaction between the ionisation plates for the current event.
+  G4double energy_keV_dep_plates_prim_volb;  // Total energy deposited for primary photon interaction in regions other than between the ionisation plates for the current event.
+  G4double energy_keV_dep_plates_scat_vola;  // Total energy deposited for scattered photon interaction between the ionisation plates for the current event.
+  G4double energy_keV_dep_plates_fluor_vola; // Total energy deposited for scattered photon interaction between the ionisation plates for the current event.
+  G4double energy_keV_dep_plates_eloss_vola; // Total energy deposited for photons whose progeny reached the collecting electrode - volume A.
+  G4double energy_keV_dep_plates_eloss_volb; // Total energy deposited for photons whose progeny reached the collecting electrode - volume B.
 
   unsigned int sens_layer; // Variable that stores the  ID of the middle layer of the ionisation chamber gas stack .
   G4String sens_vol;       // Variable that stores the string that is linked to the physical volume of the gas stack.
