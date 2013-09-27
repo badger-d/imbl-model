@@ -19,9 +19,6 @@ class RunAction : public G4UserRunAction
   virtual void BeginOfRunAction(const G4Run*);
   virtual void EndOfRunAction(const G4Run*);
 
-
-  virtual void Set_Description(G4String);
-
   // Store the pointer to the header file.
   virtual void Store_Head_File_Name(G4String val){stored_head_fname = val;};
 
@@ -34,6 +31,7 @@ class RunAction : public G4UserRunAction
   virtual  G4String Get_Experiment_Name(){return stored_exp_name;};
 
   virtual void Set_File(G4String);
+  virtual void Set_Description(G4String);
 
   // Store the pointer to the output file.
   virtual void Store_File_Ptr(std::ofstream &val){data_out_ptr = &(val);};
@@ -70,6 +68,8 @@ class RunAction : public G4UserRunAction
     G4String file_ext;
 
     G4String file_name;
+
+    G4String description;
 
 
 };

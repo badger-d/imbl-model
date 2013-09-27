@@ -44,6 +44,11 @@ void RunAction::Set_File(G4String val)
 	Store_Data_File_Name(data_file_name);
 }
 
+void RunAction::Set_Description(G4String val)
+{
+   description = val;
+}
+
 void RunAction::BeginOfRunAction(const G4Run*)
 {
 	file_base = "/home/dimmockm/test";
