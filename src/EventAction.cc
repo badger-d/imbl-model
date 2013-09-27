@@ -369,9 +369,6 @@ void EventAction::Get_Progeny(vector<DetectorHits*> &all_hits, G4int track_to_fi
 		// Get the parent ID of the current interaction.
 		int parent_id = cur_hit->GetParentID();
 
-		// Get the parent ID of the current interaction.
-		int track_id = cur_hit->GetTrackID();
-
 		// Test if the parent ID corresponds to the track of interest.
 		if (parent_id == track_to_find){
 			daughter_tracks.push_back(parent_id);
