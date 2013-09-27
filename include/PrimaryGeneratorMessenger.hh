@@ -23,14 +23,20 @@ private:
 
   PrimaryGeneratorAction* Action;
 
-  // Particle energy.
+  // Particle energy command.
   G4UIcmdWithADoubleAndUnit* energy_cmd;
 
-  // Isotropy.
+  // Source emission isotropy command.
   G4UIcmdWithAString* isotropy_cmd;
 
-  // Particle origin.
+  // Particle origin command.
   G4UIcmdWith3VectorAndUnit* origin_cmd;
+
+  // Source emission location.
+  G4UIcmdWithADoubleAndUnit* diameter_cmd;
+
+  // Source emission position distribution.
+  G4UIcmdWithAString* distribution_cmd;
 
 };
 

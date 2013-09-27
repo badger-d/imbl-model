@@ -28,6 +28,8 @@
 /gun/isotropy forward
 /gun/origin 0.0 0.0 -200.0 mm
 /gun/inpenergy 20.0 keV
+/gun/distribution square
+/gun/diameter 2.0 mm
 
 #/control/execute vis.mac
 
@@ -38,4 +40,4 @@
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 50000
+/run/beamOn 500
