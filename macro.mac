@@ -5,8 +5,8 @@
 
 #------------------ Define physics ------------------#
 /testem/phys/addPhysics option
-/testem/phys/setGCut 0.1 um
-/testem/phys/setECut 0.1 um
+/testem/phys/setGCut 100.0 um
+/testem/phys/setECut 100.0 um
 /cuts/setLowEdge 250 eV
 #
 /run/initialize
@@ -35,9 +35,9 @@
 
 #------------------ Define output file locations ------------------#
 
-/runinf/description Parallel source incident on LEFAC at 20.0 keV.
-/runinf/fname_conv ion_cham_coeff
+/runinf/description Parallel source incident on LEFAC.
+/runinf/fname_conv run_store
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 500
+/run/beamOn 500000

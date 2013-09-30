@@ -14,6 +14,7 @@ RunAction::RunAction(DetectorConstruction* DC, PrimaryGeneratorAction* PG)
    messenger = new RunMessenger(this);
    detector = DC;
    primary = PG;
+   file_base = "/home/dimmockm/test";
 }
 
 RunAction::~RunAction()
@@ -51,7 +52,6 @@ void RunAction::Set_Description(G4String val)
 
 void RunAction::BeginOfRunAction(const G4Run*)
 {
-	file_base = "/home/dimmockm/test";
 	Set_File(file_base);
 }
 

@@ -31,13 +31,13 @@ void RunMessenger::SetNewValue(G4UIcommand * command,G4String newValue)
   if( command == descriptionCmd )
     {
       target->Set_Description(newValue);
+      G4cout << "Experiment description " << newValue << G4endl;
     }
-  G4cout << "Experiment description " << newValue << G4endl;
 
   if( command == file1Cmd )
     {
       target->Set_File(newValue);
+      G4cout << "Files saved as " << newValue << G4endl;
     }
-  G4cout << "Files saved as " << newValue << G4endl;
 
 }

@@ -182,35 +182,6 @@ bool EventAction::Energy_Dep_Between_Plates(DetectorHitsCollection* hits_col)
 void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all_hits, vector<DetectorHits*> &time_sort_phot_hits)
 {
 
-//	   G4cout << "-------------- NEW EVENT -----------------------" << G4endl;
-//
-//	   for (unsigned int i = 0; i < time_sort_phot_hits.size(); i++) {
-//
-//		   // Get the primary photon interaction.
-//   		   DetectorHits* first_phot_hit_temp = time_sort_phot_hits[i];
-//
-//		   G4bool is_fluor_temp  = Is_Fluor(first_phot_hit_temp->GetTrackID(), first_phot_hit_temp->GetParentID());
-//		   if (is_fluor_temp){
-//
-//			   for (unsigned int i = 0; i < time_sort_all_hits.size(); i++) {
-//			   // Get the current hit.
-//			   DetectorHits* ion_cham_hit = time_sort_all_hits[i];
-//
-//			   G4cout << ion_cham_hit->GetTrackID() << " "
-//			          << ion_cham_hit->GetParentID() << " "
-//			          << ion_cham_hit->GetEnergyDep() / keV << " "
-//			          << ion_cham_hit->GetGlobalTime() / ns << " "
-//			          << ion_cham_hit->GetParticle() << " "
-//			          << ion_cham_hit->GetCopyNumber() << " "
-//			          << ion_cham_hit->GetPreProcess() << " "
-//			          //<< ion_cham_hit->GetVolume() << " "
-//			          << G4endl;
-//			   }
-//
-//		   }
-//	   }
-
-
 	// Init. output flag for file write.
 	int output_flag = -1;
 
@@ -337,15 +308,12 @@ bool EventAction::Has_Scat(vector<DetectorHits*> &phot_hits){
 		// Get the hit (interaction).
 		DetectorHits* cur_hit = phot_hits[i];
 
-		// Test if the photon if a primary or fluorescence photon.
+		// Test if the photon is a primary or fluorescence photon.
 		G4bool is_fluor  = EventAction::Is_Fluor(cur_hit->GetTrackID(), cur_hit->GetParentID());
 		if (not is_fluor){
 
 			// Increment the counter by one.
 			prim_phot_interacs += 1;
-
-			// Append the interaction to the scattered photon list.
-			phot_hits.push_back(cur_hit);
 		}
 	}
 
