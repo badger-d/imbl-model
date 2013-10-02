@@ -185,109 +185,160 @@ void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all
 	// Init. output flag for file write.
 	int output_flag = -1;
 
+	// Init. var for first interaction being a Rayleigh scatter.
+	bool is_rayleigh = false;
+
+	// Init. var for first interaction being a scatter of any kind.
+	bool has_scat = false;
+
+	// Init. var for a photon interaction being a primary or fluorescence.
+	bool is_primary = false;
+
+	// Init. var for fluorescence photons being present.
+	bool has_fluor = false;
+
 	// Check if there is a photon interaction stored.
 	if ((unsigned int)time_sort_phot_hits.size() > 0){
+
+		// There is a photon in the list.
 
 		// Get the primary photon interaction.
 		DetectorHits* first_phot_hit = time_sort_phot_hits[0];
 
 		// Test if the photon if a primary or fluorescence photon.
-		G4bool is_fluor  = Is_Fluor(first_phot_hit->GetTrackID(), first_phot_hit->GetParentID());
-		if (not is_fluor){
+		is_primary = Is_Primary(first_phot_hit->GetTrackID(), first_phot_hit->GetParentID());
 
-			// It is primary!
+		// Init. vector to store the progeny of the first interaction.
+		vector<DetectorHits*> first_phot_progeny;
 
-			// Test if the interaction happened between the plates.
-			if (((unsigned int)first_phot_hit->GetCopyNumber() == sens_layer)
-					&& ((G4String)first_phot_hit->GetVolume() == sens_vol)){
+		// Init. vector to store the progeny of fluorescence interacitons.
+		vector<DetectorHits*> fluor_phot_progeny;
 
-				// The first interaction happened between the plates.
+		if (is_primary){
 
-				// First, get the photon trackID.
-				G4int first_phot_track_id = first_phot_hit->GetTrackID();
+			// The photon is a primary.
 
-				// Init. vector to store the progeny.
-				vector<DetectorHits*> first_phot_progeny;
+			// A strange type of interaction where the photon is not recorded may happen, so avert this.
+		    unsigned int interaction_index = Get_First_Photon_Index(time_sort_all_hits);
 
-				// Add this first interaction to the progeny for the energy sum.
-				first_phot_progeny.push_back(first_phot_hit);
+			// Add this first interaction to the progeny for the energy sum.
+			first_phot_progeny.push_back(time_sort_all_hits[interaction_index]);
 
-				// Init. a vector to store the daughter tracks associated with this interaction.
-				vector<G4int> first_phot_daughter_tracks;
+			// Now check if the photon has scattered.
+			has_scat = Has_Scat(time_sort_phot_hits);
+
+			if (has_scat){
+
+				// -------------- Process for $k_{asc}$. --------------------- //
+
+				// Sum the energies for the progeny.
+				// Just search through all interactions, do not group according to tracks.
+				energy_keV_dep_plates_scat_vola = Sum_Energies_In_Hit_Vol(time_sort_all_hits, sens_layer, sens_vol);
+
+				// Dump the sum energy to file.
+				output_flag = 2;
+				Dump_Photon_Interac_Energy(energy_keV_dep_plates_scat_vola, output_flag);
+
+
+				// -------------- Process for $k_{ap}$, but only those that have scattered. --------------------- //
+				// We are effectively double counting, but from the paper, it appears this should be the case.
+
+				// Get the energy deposited at the first interaction location.
+				G4double first_phot_hit_energy_keV = first_phot_hit->GetEnergyDep() / keV;
+
+				// The photon has scattered, so it must be either a Rayleigh or Compton.
+				is_rayleigh = Is_Rayleigh(first_phot_hit_energy_keV);
 
 				// Get the progeny associated with this interaction.
-				Get_Progeny(first_phot_progeny, first_phot_track_id, first_phot_daughter_tracks);
+	            // Different ordering is required if the photon is a scatter of photoelectric absorption..
+				if (not is_rayleigh){
+
+					// Get the photon progeny knowing that the interaction was a Compton scatter.
+					Get_Photon_Progeny_Scat(time_sort_all_hits, interaction_index, first_phot_progeny);
+
+				}
+
+				// If it is a Rayleigh, there are no progeny to worry about.
+
+
+			} else{
+
+				// It is a primary photon interaction that has not scattered.
+
+				// Get the photon progeny knowing that the interaction was a photoelectric absorption.
+				Get_Photon_Progeny_Phot(time_sort_all_hits, interaction_index, first_phot_progeny);
+
+			}
+
+
+			if (first_phot_progeny.size() > 0){
 
 				// Sum the energies for the progeny
-				Sum_Energies_In_Hit_Vol(first_phot_progeny, energy_keV_dep_plates_prim_vola, sens_layer, sens_vol);
+				energy_keV_dep_plates_prim_vola = Sum_Energies_In_Hit_Vol(first_phot_progeny, sens_layer, sens_vol);
 
 				// Dump the sum energy to file.
 				output_flag = 0;
-				Dump_Photon_Interac_Energy(energy_keV_dep_plates_scat_vola, output_flag);
-
-			} else {
+				Dump_Photon_Interac_Energy(energy_keV_dep_plates_prim_vola, output_flag);
 
 				// Sum the energies for the progeny
-				Sum_Energies_Not_In_Hit_Vol(time_sort_all_hits, energy_keV_dep_plates_prim_volb, sens_layer, sens_vol);
+				energy_keV_dep_plates_prim_volb = Sum_Energies_Not_In_Hit_Vol(first_phot_progeny, sens_layer, sens_vol);
 
 				// Dump the sum energy to file.
 				output_flag = 1;
 				Dump_Photon_Interac_Energy(energy_keV_dep_plates_prim_volb, output_flag);
 
-				// At this point we know that the first interaction was not between the plates.
-				// Now check if the photon has also scattered.
-				G4bool has_scat = Has_Scat(time_sort_phot_hits);
-				if (has_scat){
+			}
 
-					// Sum the energies for the progeny
-					Sum_Energies_In_Hit_Vol(time_sort_all_hits, energy_keV_dep_plates_scat_vola, sens_layer, sens_vol);
-
-					// Dump the sum energy to file.
-					output_flag = 2;
-					Dump_Photon_Interac_Energy(energy_keV_dep_plates_scat_vola, output_flag);
-
-				}
-			} // End if / else test of whether the first interaction was between the plates.
 		}
 
 		// Now search for fluorescence photons.
+		has_fluor = Has_Fluor(time_sort_phot_hits);
 
-		// Init. vector to store the progeny.
-		vector<DetectorHits*> fluor_phot_progeny;
+		if (has_fluor){
 
-		// Now loop over the photons to look for fluorescence photons.
-		for (int i = 0; i < (int)time_sort_phot_hits.size(); i++){
+			// Dig out the progeny of the fluorescence photons.
 
-			// Get the current photon interaction.
-			DetectorHits* fluor_phot_interac = time_sort_phot_hits[i];
+			// Init. vector to store the indices of the fluorescence interactions.
+			vector<unsigned int> fluor_phot_indices;
 
-			// Test if the photon is a fluorescence photon.
-			G4bool is_fluor  = Is_Fluor(fluor_phot_interac->GetTrackID(), fluor_phot_interac->GetParentID());
-			if (is_fluor){
+			// Get the indices of the fluorescence photons.
+			Get_Fluor_Photon_Indices(time_sort_all_hits, fluor_phot_indices);
 
-				// Add this interaction to the progeny for the energy sum.
-				fluor_phot_progeny.push_back(fluor_phot_interac);
+			// Get the fluorescence photon progeny.
+			Get_Photon_Progeny_Fluor(time_sort_all_hits, fluor_phot_indices, fluor_phot_progeny);
 
-				// First, get the fluorescence photon trackID.
-				G4int fluor_phot_track_id = fluor_phot_interac->GetTrackID();
+			// Sum the energies for the progeny
+			energy_keV_dep_plates_fluor_vola = Sum_Energies_In_Hit_Vol(fluor_phot_progeny, sens_layer, sens_vol);
 
-				// Init. a vector to store the daughter tracks associated with this particle.
-				vector<G4int> fluor_phot_daughter_tracks;
+			// Dump the sum energy to file.
+			output_flag = 3;
+			Dump_Photon_Interac_Energy(energy_keV_dep_plates_fluor_vola, output_flag);
 
-				// Get the progeny associated with this interaction.
-				Get_Progeny(fluor_phot_progeny, fluor_phot_track_id, fluor_phot_daughter_tracks);
-
-			}
 		}
-
-		// Sum the energies for the progeny
-		Sum_Energies_In_Hit_Vol(fluor_phot_progeny, energy_keV_dep_plates_fluor_vola, sens_layer, sens_vol);
-
-		// Dump the sum energy to file.
-		output_flag = 3;
-		Dump_Photon_Interac_Energy(energy_keV_dep_plates_fluor_vola, output_flag);
 	}
 }
+
+
+bool EventAction::Has_Fluor(vector<DetectorHits*> &phot_hits){
+
+	// Determine if a fluorescence photon is present.
+	for (int i = 0; i < (int)phot_hits.size(); i++){
+
+		// Get the hit (interaction).
+		DetectorHits* cur_hit = phot_hits[i];
+
+		// Test if the photon is a primary or fluorescence photon.
+		bool is_primary  = EventAction::Is_Primary(cur_hit->GetTrackID(), cur_hit->GetParentID());
+		if (not is_primary){
+
+			// A fluorescence photon was found.
+			return true;
+		}
+	}
+
+	return false;
+}
+
 
 bool EventAction::Has_Scat(vector<DetectorHits*> &phot_hits){
 
@@ -309,12 +360,13 @@ bool EventAction::Has_Scat(vector<DetectorHits*> &phot_hits){
 		DetectorHits* cur_hit = phot_hits[i];
 
 		// Test if the photon is a primary or fluorescence photon.
-		G4bool is_fluor  = EventAction::Is_Fluor(cur_hit->GetTrackID(), cur_hit->GetParentID());
-		if (not is_fluor){
+		bool is_primary  = EventAction::Is_Primary(cur_hit->GetTrackID(), cur_hit->GetParentID());
+		if (is_primary){
 
 			// Increment the counter by one.
 			prim_phot_interacs += 1;
 		}
+
 	}
 
 	if (prim_phot_interacs >= 2){
@@ -326,21 +378,257 @@ bool EventAction::Has_Scat(vector<DetectorHits*> &phot_hits){
 	return false;
 }
 
-void EventAction::Get_Progeny(vector<DetectorHits*> &all_hits, G4int track_to_find, vector<G4int> &daughter_tracks){
+bool EventAction::Has_Relevant_Parent(unsigned int parent, vector<unsigned int> parent_vector){
+
+	for (int i = 0; i < (int)parent_vector.size(); i++){
+
+		if (parent == (unsigned int)parent_vector[i]) {
+
+			return true;
+		}
+	}
+	return false;
+}
+
+void EventAction::Add_Track_ID(unsigned int track, vector<unsigned int> &parent_vector){
+
+	// Assume that the track ID is not in the master parent ID list.
+	bool in_parent_vector = false;
+
+	for (int i = 0; i < (int)parent_vector.size(); i++){
+
+		if (track == parent_vector[i]){
+
+			in_parent_vector = true;
+			break;
+		}
+
+	}
+
+	if (not in_parent_vector) {
+
+		parent_vector.push_back(track);
+	}
+}
+
+unsigned int EventAction::Get_First_Photon_Index(vector<DetectorHits*> &all_hits){
+
+	// Get the hit index that corresponds to the first photon interaction.
+
+	// Assume there are no photons.
+	bool is_photon = false;
+
+	// Init. index for photon interaction.
+	unsigned int i;
+
+	// Loop over the interactions.
+	for (i = 0; i < (unsigned int)all_hits.size(); i++){
+
+		// Get the interaction that is the start point.
+		DetectorHits* cur_hit = all_hits[i];
+
+		// Test to see if the interaction is a photon.
+		is_photon = EventAction::Is_Photon(cur_hit->GetParticle());
+		if (is_photon){
+
+			break;
+		}
+	}
+
+	// A photon must be found.
+	assert(is_photon == true);
+
+	return i;
+}
+
+void EventAction::Get_Photon_Progeny_Phot(vector<DetectorHits*> &all_hits, unsigned int init_interac_index, vector<DetectorHits*> &daughter_tracks){
+
+	// Layer store check.
+	vector<unsigned int> parent_vector;
+
+	// Get the interaction that is the start point.
+	DetectorHits* first_interac = all_hits[init_interac_index];
+
+	// The first interaction must be a photon.
+	assert(first_interac->GetParticle() == "gamma");
+
+	// Init. var for maximum interaction to loop up to.
+	unsigned int max = (unsigned int)all_hits.size();
+
+	// Just a normal photoelectric interaction, so will loop over all interactions.
+	max = (unsigned int)all_hits.size();
+
+	// Store the track ID.
+	parent_vector.push_back(first_interac->GetTrackID());
 
 	// Loop over the interactions to find tracks with the corresponding parent ID.
-	for (int i = 0; i < (int)all_hits.size(); i++){
+	for (unsigned int i = init_interac_index + 1; i < max; i++){
 
 		// Get the hit (interaction).
 		DetectorHits* cur_hit = all_hits[i];
 
-		// Get the parent ID of the current interaction.
-		int parent_id = cur_hit->GetParentID();
+		// Get the current parent.
+		unsigned int cur_parent = cur_hit->GetParentID();
 
-		// Test if the parent ID corresponds to the track of interest.
-		if (parent_id == track_to_find){
-			daughter_tracks.push_back(parent_id);
-			//Get_Progeny(all_hits, track_id, daughter_tracks);
+		// Determine if the interaction has a relevant parent.
+		bool has_relevant_parent = Has_Relevant_Parent(cur_parent, parent_vector);
+
+		if (has_relevant_parent){
+
+			// Add the hit to the vector.
+			daughter_tracks.push_back(cur_hit);
+
+			// Get the current track.
+			unsigned int cur_track = cur_hit->GetTrackID();
+
+			// Add this track ID as a valid parent ID for the mother interaction.
+			Add_Track_ID(cur_track, parent_vector);
+		}
+	}
+}
+
+void EventAction::Get_Photon_Progeny_Scat(vector<DetectorHits*> &all_hits, unsigned int init_interac_index, vector<DetectorHits*> &daughter_tracks){
+
+	// Layer store check.
+	vector<unsigned int> parent_vector;
+
+	// Get the interaction that is the start point.
+	DetectorHits* first_interac = all_hits[init_interac_index];
+
+	// The first interaction must be a photon.
+	assert(first_interac->GetParticle() == "gamma");
+
+	// Init. var for maximum interaction to loop up to.
+	unsigned int max = (unsigned int)all_hits.size();
+
+	// Init. loop var.
+	unsigned int i;
+
+	// Shorten the stack to the interaction before the scatter.
+	for (i = init_interac_index + 1; i < (unsigned int)all_hits.size(); i++){
+
+		// Get the hit (interaction).
+		DetectorHits* cur_hit = all_hits[i];
+
+		// Determine if the interaction is a primary.
+		bool is_primary = Is_Primary(cur_hit->GetTrackID(), cur_hit->GetParentID());
+
+		if (is_primary){
+			break;
+
+		}
+
+	}
+
+	// Set the maximum interaction to loop up to to be the break point.
+	max = i;
+
+	// Store the track ID.
+	parent_vector.push_back(first_interac->GetTrackID());
+
+	// Loop over the interactions to find tracks with the corresponding parent ID.
+	for (unsigned int i = init_interac_index + 1; i < max; i++){
+
+		// Get the hit (interaction).
+		DetectorHits* cur_hit = all_hits[i];
+
+		// Get the current parent.
+		unsigned int cur_parent = cur_hit->GetParentID();
+
+		// Determine if the interaction has a relevant parent.
+		bool has_relevant_parent = Has_Relevant_Parent(cur_parent, parent_vector);
+
+		if (has_relevant_parent){
+
+			// Add the hit to the vector.
+			daughter_tracks.push_back(cur_hit);
+
+			// Get the current track.
+			unsigned int cur_track = cur_hit->GetTrackID();
+
+			// Add this track ID as a valid parent ID for the mother interaction.
+			Add_Track_ID(cur_track, parent_vector);
+		}
+	}
+}
+
+void EventAction::Get_Fluor_Photon_Indices(vector<DetectorHits*> &all_hits, vector<unsigned int> &indices){
+
+	// Get the hit indices that corresponds to fluorescence photons.
+
+	// Loop over the interactions.
+	for (unsigned int i = 0; i < (unsigned int)all_hits.size(); i++){
+
+		// Get the interaction that is the start point.
+		DetectorHits* cur_hit = all_hits[i];
+
+		// Test to see if the interaction is a photon.
+		bool is_photon = EventAction::Is_Photon(cur_hit->GetParticle());
+
+		if (is_photon){
+
+			// Test to see if the photon is a primary or fluorescence photon.
+			bool is_primary = EventAction::Is_Primary(cur_hit->GetTrackID(), cur_hit->GetParentID());
+
+			if (not is_primary) {
+
+				// It is a fluorescence photon so add the index to the vector.
+				indices.push_back(i);
+			}
+		}
+	}
+}
+
+void EventAction::Get_Photon_Progeny_Fluor(vector<DetectorHits*> &all_hits, vector<unsigned int> &indices, vector<DetectorHits*> &daughter_tracks){
+
+	// Init. interaction index.
+	unsigned int fluor_interac_index;
+
+	// Layer store check.
+	vector<unsigned int> parent_vector;
+
+	// Loop over the fluorescence interaciton indices.
+	for (unsigned int i = 0; i < (unsigned int)indices.size(); i++){
+
+		// Pass the current fluorescence index.
+		fluor_interac_index = indices[i];
+
+		// Get the hit (interaction).
+		DetectorHits* fluor_photon_hit = all_hits[fluor_interac_index];
+
+		// Add the parent hit to the vector.
+		daughter_tracks.push_back(fluor_photon_hit);
+
+		// Store the track ID.
+		parent_vector.push_back(fluor_photon_hit->GetTrackID());
+
+		// Add one to the interaction index to skip on to progeny.
+		fluor_interac_index += 1;
+
+		// Loop over the interactions to find the fluorescence progeny.
+		for (unsigned int j = fluor_interac_index; j < (unsigned int)all_hits.size(); j++){
+
+			// Get the hit (interaction).
+			DetectorHits* cur_hit = all_hits[j];
+
+			// Get the current parent.
+			unsigned int cur_parent = cur_hit->GetParentID();
+
+			// Determine if the interaction has a relevant parent.
+			bool has_relevant_parent = Has_Relevant_Parent(cur_parent, parent_vector);
+
+			if (has_relevant_parent){
+
+				// Add the hit to the vector.
+				daughter_tracks.push_back(cur_hit);
+
+				// Get the current track.
+				unsigned int cur_track = cur_hit->GetTrackID();
+
+				// Add this track ID as a valid parent ID for the mother interaction.
+				Add_Track_ID(cur_track, parent_vector);
+
+			}
 		}
 	}
 }
@@ -373,9 +661,10 @@ bool EventAction::All_Electron_Interacs_In_Sens(vector<DetectorHits*> &all_hits)
 	return true;
 }
 
-void EventAction::Sum_Energies_In_Hit_Vol(vector<DetectorHits*> &all_hits, G4double &total_energy_keV, unsigned int layer, G4String volume){
+G4double EventAction::Sum_Energies_In_Hit_Vol(vector<DetectorHits*> &all_hits, unsigned int layer, G4String volume){
 
 	// Sum the energies of the interactions that ARE INSIDE the designate volume and layer.
+	G4double total_energy_keV = 0.0;
 
 	// Loop over the interactions and grab hist collection with sorted time stamp.
 	for (G4int i = 0; i < (G4int)all_hits.size(); i++){
@@ -391,11 +680,13 @@ void EventAction::Sum_Energies_In_Hit_Vol(vector<DetectorHits*> &all_hits, G4dou
 
 		}
 	}
+	return total_energy_keV;
 }
 
-void EventAction::Sum_Energies_Not_In_Hit_Vol(vector<DetectorHits*> &all_hits, G4double &total_energy_keV, unsigned int layer, G4String volume){
+G4double EventAction::Sum_Energies_Not_In_Hit_Vol(vector<DetectorHits*> &all_hits, unsigned int layer, G4String volume){
 
 	// Sum the energies of the interactions that ARE NOT INSIDE the designate volume and layer.
+	G4double total_energy_keV = 0.0;
 
 	// Loop over the interactions and grab hist collection with sorted time stamp.
 	for (G4int i = 0; i < (G4int)all_hits.size(); i++){
@@ -411,19 +702,21 @@ void EventAction::Sum_Energies_Not_In_Hit_Vol(vector<DetectorHits*> &all_hits, G
 
 		}
 	}
+	return total_energy_keV;
 }
 
 
-void EventAction::Dump_Photon_Interac_Energy(const G4double dump_energy_keV,  const signed int output_flag){
+void EventAction::Dump_Photon_Interac_Energy(const G4double dump_energy_keV,  const unsigned int output_flag){
 
-	// The output flag must be given an appropriate value to tag the event type in the output file.
-	assert(output_flag > -1);
+	if (dump_energy_keV > 0.000000001){
 
-	// Get the output file pointer.
-	out_file_ptr = run->Get_File_Ptr();
+		// Get the output file pointer.
+		out_file_ptr = run->Get_File_Ptr();
 
-	// Write the position to file.
-	*out_file_ptr << output_flag << " " << dump_energy_keV << G4endl;
+		// Write the position to file.
+		*out_file_ptr << output_flag << " " << dump_energy_keV << G4endl;
+
+	}
 }
 
 void EventAction::Dump_Prim_Photon_Interac_Pos(const G4double x,  const G4double y, const G4double z){
@@ -469,13 +762,13 @@ bool EventAction::Is_Photoelectron(G4String pre_process){
 	return false;
 }
 
-bool EventAction::Is_Fluor(const unsigned int track, const unsigned int parent){
+bool EventAction::Is_Primary(const unsigned int track, const unsigned int parent){
 
-	// Determine whether or not the photon is a fluorescence or not (primary).
+	// Determine whether or not the photon is a primary or not (fluorescence).
 	if (track == 1 && parent == 0){
-		return false;
+		return true;
 	}
-	return true;
+	return false;
 }
 
 void EventAction::Vectorize_Hits(vector<DetectorHits*>	&ion_cham_all_hits, vector<DetectorHits*> &ion_cham_phot_hits, DetectorHitsCollection* hits_col, vector<G4double> &all_hit_times, vector<G4double> &phot_hit_times)
