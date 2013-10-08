@@ -1,6 +1,8 @@
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
 #include "SensitiveDet.hh"
+#include "G4FieldManager.hh"
+#include "G4UniformElectricField.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "StackParameterisation.hh"
 #include "G4Material.hh"
@@ -22,6 +24,7 @@
 #include "G4RotationMatrix.hh"
 #include "G4UnionSolid.hh"
 #include "G4SubtractionSolid.hh"
+#include "ElectricFieldSetup.hh"
 #include <vector>
 #include <assert.h>
 #include <map>
@@ -29,7 +32,12 @@
 
 DetectorConstruction::DetectorConstruction()
 {
-  detectorMessenger = new DetectorMessenger(this);
+
+  // Create an instance of the detector messenger.
+  detector_messenger = new DetectorMessenger(this);
+
+  // Create an instance of the electromagnetic field setup.
+  em_field_setup = new ElectricFieldSetup();
 
   // Select the ion chamber to be included / excluded.
   ion_cham_flag = "on";
@@ -59,7 +67,8 @@ DetectorConstruction::DetectorConstruction()
 
 DetectorConstruction::~DetectorConstruction()
 {
-   delete detectorMessenger;
+   delete detector_messenger;
+   if (em_field_setup) delete em_field_setup;
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct()
@@ -300,6 +309,15 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
         	ion_cham_layer_sd = new SensitiveDet("/detector/ion_cham_layer");
             SDman->AddNewDetector(ion_cham_layer_sd);
           }
+
+        // Set the logical volume to contain an electric field.
+        ion_cham_layer_log->SetFieldManager(em_field_setup->GetLocalFieldManager(), true);
+
+        //ic_em_field = new G4UniformElectricField(G4ThreeVector(0.0,1000.0*kilovolt/cm,0.0));
+        //local_ic_field_mgr = new G4FieldManager(ic_em_field);
+        //ion_cham_layer_log->SetFieldManager(local_ic_field_mgr, true);
+
+        // Set as sensitive detector.
         ion_cham_layer_log->SetSensitiveDetector(ion_cham_layer_sd);
 
         // Make the ion chamber shell a sensitive volumes.

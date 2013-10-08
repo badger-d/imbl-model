@@ -5,8 +5,10 @@
 
 #------------------ Define physics ------------------#
 /testem/phys/addPhysics option
-/testem/phys/setGCut 100.0 um
-/testem/phys/setECut 100.0 um
+#/testem/phys/setGCut 100.0 um
+#/testem/phys/setECut 100.0 um
+/testem/phys/setGCut 1.0 mm
+/testem/phys/setECut 1.0 mm
 /cuts/setLowEdge 250 eV
 #
 /run/initialize
@@ -17,6 +19,12 @@
 /process/em/fluo true
 /process/em/pixeXSmodel
 /process/eLoss/minKinEnergy 100 eV
+
+#------------------ Ion chamber field strength ------------------#
+
+/field/setStepperType 4
+/field/setMinStep 0.5 mm
+/field/update
 
 #------------------ Define detector ------------------#
 
@@ -40,4 +48,4 @@
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 500000
+/run/beamOn 50

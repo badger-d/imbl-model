@@ -9,12 +9,15 @@ class SensitiveDet;
 class ExpPhantomSD;
 class DetectorInfo;
 class G4Box;
+class ElectricFieldSetup;
 
 #include "G4VUserDetectorConstruction.hh"
 #include "globals.hh"
 #include "G4ThreeVector.hh"
 #include "G4RotationMatrix.hh"
 #include <vector>
+#include "G4ElectricField.hh"
+#include "G4FieldManager.hh"
 
 using namespace std;
 
@@ -85,7 +88,10 @@ private:
   G4Material* vacuum_mat;            // Declare vacuum material.
 
   // Detector messenger pointer.
-  DetectorMessenger* detectorMessenger;
+  DetectorMessenger* detector_messenger;
+
+  // Electromagnetic field pointer.
+  ElectricFieldSetup* em_field_setup;
 
   // Flags to switch components on/off.
   G4String sample_flag;
@@ -126,6 +132,10 @@ private:
 
   // Specify the correction value that ensures there are no boundary clashes.
   G4double correc_fac;
+
+  // Electric field for volume of the ionisation chamber.
+  G4ElectricField* ic_em_field;
+  G4FieldManager* local_ic_field_mgr;
 };
 
 #endif

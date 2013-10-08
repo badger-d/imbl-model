@@ -45,14 +45,16 @@ class FieldMessenger;
 /// It is simply a 'setup' class that creates the field and necessary 
 /// other parts
 
+
 class ElectricFieldSetup
 {
+
 public:
 
-  ElectricFieldSetup(G4ThreeVector) ;  //  The value of the field
-  ElectricFieldSetup() ;               //  A zero field
+  ElectricFieldSetup();               //  A zero field
+  ElectricFieldSetup(G4ThreeVector);  //  The value of the field
 
- ~ElectricFieldSetup() ;
+  ~ElectricFieldSetup();
       
   void SetStepperType( G4int i) { fStepperType = i ; }
 
@@ -65,31 +67,43 @@ public:
   void SetFieldValue(G4ThreeVector fieldVector);
   void SetFieldValue(G4double      fieldValue);
   G4ThreeVector GetConstantFieldValue();
+  G4FieldManager*  GetLocalFieldManager() { return fLocalFieldManager;}
 
 protected:
 
-      // Find the global Field Manager
+  // Find the global Field Manager
   G4FieldManager*         GetGlobalFieldManager() ;
 
-private:
-  G4FieldManager*         fFieldManager ;
+  G4FieldManager*         fFieldManager;
+  G4FieldManager*         fLocalFieldManager;
 
-  G4ChordFinder*          fChordFinder ;
+  G4ChordFinder*          fChordFinder;
+  G4ChordFinder*          fLocalChordFinder;
 
-  G4EqMagElectricField*   fEquation ;
+  G4EqMagElectricField*   fEquation;
+  G4EqMagElectricField*   fLocalEquation;
 
-  G4ElectricField*        fEMfield;
- 
-  G4ThreeVector           fElFieldValue ; 
 
   G4MagIntegratorStepper* fStepper ;
+  G4MagIntegratorStepper* fLocalStepper ;
+
+  G4double                fMinStep;
+  G4int                   fStepperType;
+  FieldMessenger*         fFieldMessenger;
+
+  G4ElectricField*        fEMfield;
+  G4ElectricField*        fLocalEMfield;
+
   G4MagInt_Driver*        fIntgrDriver;
+  G4MagInt_Driver*        fLocalIntgrDriver;
 
-  G4int                   fStepperType ;
 
-  G4double                fMinStep ;
- 
-  FieldMessenger*      fFieldMessenger;
+
+
+
+
+
+
 
 };
 
