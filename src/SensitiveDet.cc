@@ -36,7 +36,6 @@ G4bool SensitiveDet::ProcessHits(G4Step* aStep, G4TouchableHistory*)
 
    particle = aStep->GetTrack()->GetDefinition()->GetParticleName();
    parentID = aStep->GetTrack()->GetParentID();
-   G4ThreeVector delta_energy(aStep->GetDeltaEnergy());
 
    G4String process = aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName();
    if(process == "Transportation") {
@@ -53,10 +52,8 @@ G4bool SensitiveDet::ProcessHits(G4Step* aStep, G4TouchableHistory*)
    newHit->SetStepLength(aStep->GetTrack()->GetStepLength());
    newHit->SetPosition(aStep->GetTrack()->GetPosition());
    newHit->SetDeltaPosition(aStep->GetDeltaPosition());
-   newHit->SetDeltaEnergy(aStep->GetDeltaEnergy());
    newHit->SetEnergyDep(aStep->GetTotalEnergyDeposit());
    newHit->SetEnergyKinetic(aStep->GetPostStepPoint()->GetKineticEnergy());
-   newHit->SetDeltaMomentum(delta_energy);
    newHit->SetProcess(aStep->GetPostStepPoint()->GetProcessDefinedStep()->GetProcessName());
    newHit->SetGlobalTranslation(aStep->GetPreStepPoint()->GetTouchable()->GetTranslation());
    newHit->SetLocalTranslation(aStep->GetPreStepPoint()->GetPhysicalVolume()->GetObjectTranslation());

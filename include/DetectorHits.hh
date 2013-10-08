@@ -25,7 +25,6 @@ public:
   virtual void SetParentID(G4int val){parentID = val;};
   virtual void SetPosition(G4ThreeVector val){position = val;};
   virtual void SetDeltaPosition(G4ThreeVector val){delta_position = val;};
-  virtual void SetDeltaEnergy(G4double val){delta_energy = val;};
   virtual void SetEnergyDep(G4double val){energy_dep = val;};
   virtual void SetEnergyKinetic(G4double val){energy_kinetic = val;};
   virtual void SetDeltaMomentum(G4ThreeVector val){delta_momentum = val;};
