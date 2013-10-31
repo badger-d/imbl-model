@@ -60,10 +60,10 @@ private:
   void Dump_Photon_Interac_Energy(const G4double dump_energy_keV,  const unsigned int output_flag);
 
   // Function for collecting the energies that are deposited in the correct ion chamber layer.
-  G4double Sum_Energies_In_Hit_Vol(std::vector<DetectorHits*> &all_hits, unsigned int layer, G4String volume);
+  G4double Sum_Energies_In_Hit_Vol(std::vector<DetectorHits*> &all_hits, unsigned int sensitive_layer, G4String sensitive_volume);
 
   // Function for collecting all other energies are not deposited in the sensitive ion chamber layer.
-  G4double Sum_Energies_Not_In_Hit_Vol(std::vector<DetectorHits*> &all_hits, unsigned int layer, G4String volume);
+  G4double Sum_Energies_Not_In_Hit_Vol(std::vector<DetectorHits*> &all_hits, unsigned int sensitive_layer, G4String sensitive_volume, G4String shell_volume);
 
   // Check if all of the electron deposits were in the gas.
   bool All_Electron_Interacs_In_Sens(std::vector<DetectorHits*> &all_hits);
@@ -95,6 +95,9 @@ private:
   // Get vector of interaction indices for fluorescence interactions.
   void Get_Fluor_Photon_Indices(vector<DetectorHits*> &all_hits, vector<unsigned int> &indices);
 
+  // Determine whether part of the scatter event has left the sensitive volume.
+  bool Has_Left_Sens(vector<DetectorHits*> &phot_hits, unsigned int layer, G4String volume);
+
   PrimaryGeneratorAction* primary;
   RunAction* run;
   DetectorConstruction* detector;
@@ -120,6 +123,6 @@ private:
 
   unsigned int sens_layer; // Variable that stores the  ID of the middle layer of the ionisation chamber gas stack .
   G4String sens_vol;       // Variable that stores the string that is linked to the physical volume of the gas stack.
-
+  G4String shell_vol;      // Variable that stores the string that is linked to the physical volume of the ion chamber shell.
 };
 #endif

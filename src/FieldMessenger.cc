@@ -40,7 +40,7 @@
 #include "G4UIcmdWithoutParameter.hh"
 
 FieldMessenger::FieldMessenger(ElectricFieldSetup* fieldSetup)
- : fElFieldSetup(fieldSetup)
+ : G4UImessenger(), fElFieldSetup(fieldSetup)
 { 
   fFieldDir = new G4UIdirectory("/field/");
   fFieldDir->SetGuidance(" field tracking control.");

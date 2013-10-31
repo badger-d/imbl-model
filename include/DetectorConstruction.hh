@@ -86,6 +86,7 @@ private:
   G4Material* ion_cham_shell_mat;    // Define the material for the shell of the ion chamber.
   G4Material* sample_mat;            // Declare sample material.
   G4Material* vacuum_mat;            // Declare vacuum material.
+  G4Material* ion_cham_sens_mat;     // Define the material for the sensitive volume of the ion chamber.
 
   // Detector messenger pointer.
   DetectorMessenger* detector_messenger;
@@ -107,7 +108,7 @@ private:
 
   // Specify the dimensions of the internal section of the Al box that is the shell of the ion chamber.
   // The shell thickness is 10.0*mm all the way around.
-  G4double ion_cham_wall_thick_mm;
+  G4double ion_cham_wall_dz_mm;
   G4ThreeVector ion_cham_int_mm;
 
   // Specify the dimensions of the sensitive volume of the ion chamber.
@@ -128,7 +129,7 @@ private:
   std::vector<G4ThreeVector> ion_cham_gas_pos_store;   // Store for the locations of the fill gas layers.
   std::vector<G4Material*> ion_cham_gas_mat_store;     // Store for the pointer to the fill gas material object.
   unsigned int num_gas_layers;                         // Number of layers of gas.
-  std::vector<G4double> ion_cham_gas_thick_mm;         // Store for the thicknesses of the gas layers along z-axis.
+  std::vector<G4double> ion_cham_gas_dz_mm;         // Store for the thicknesses of the gas layers along z-axis.
 
   // Specify the correction value that ensures there are no boundary clashes.
   G4double correc_fac;

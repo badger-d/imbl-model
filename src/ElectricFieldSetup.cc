@@ -36,7 +36,7 @@
 #include "G4TransportationManager.hh"
 #include "G4EquationOfMotion.hh"
 #include "G4EqMagElectricField.hh"
-#include "G4Mag_UsualEqRhs.hh"
+#include "G4EqMagElectricField.hh"
 #include "G4MagIntegratorStepper.hh"
 #include "G4MagIntegratorDriver.hh"
 #include "G4ChordFinder.hh"
@@ -64,21 +64,24 @@ ElectricFieldSetup::ElectricFieldSetup()
   fLocalChordFinder = 0;
   fStepper = 0;
 
-  fEMfield = new G4UniformElectricField(G4ThreeVector(0.0,1.0*kilovolt/cm,0.0));
-  fLocalEMfield = new G4UniformElectricField(G4ThreeVector(0.0,1.0*kilovolt/cm,0.0));
+  fEMfield = new G4UniformElectricField(0.0,1.0*kilovolt/cm,0.0);
+  fLocalEMfield = new G4UniformElectricField(0.0,1.0*kilovolt/cm,0.0);
 
-  fFieldMessenger = new FieldMessenger(this) ;
+  fFieldMessenger = new FieldMessenger(this);
 
   fEquation = new G4EqMagElectricField(fEMfield);
   fLocalEquation = new G4EqMagElectricField(fLocalEMfield);
 
-  fMinStep = 0.025*mm;
-  fStepperType = 4;
+  fMinStep     = 0.25*mm ; // minimal step of 1 mm is default
+  fStepperType = 4 ;      // ClassicalRK4 is default stepper
 
   fFieldManager = GetGlobalFieldManager();
   fLocalFieldManager = new G4FieldManager();
 
   UpdateField();
+
+
+
 }
 
 ElectricFieldSetup::ElectricFieldSetup(G4ThreeVector fieldVector)
@@ -91,15 +94,13 @@ ElectricFieldSetup::ElectricFieldSetup(G4ThreeVector fieldVector)
 	fFieldManager = GetGlobalFieldManager();
 	fFieldMessenger = new FieldMessenger(this) ;
 	UpdateField();
-
 }
 
 ElectricFieldSetup::~ElectricFieldSetup()
 {
-  if (fChordFinder) delete fChordFinder;
-  if (fStepper)     delete fStepper;
-  if (fEquation)    delete fEquation;   
-  if (fEMfield)     delete fEMfield;
+	  if(fEMfield) delete fEMfield;
+	  if(fChordFinder)   delete fChordFinder;
+	  if(fStepper)       delete fStepper;
 }
 
 void ElectricFieldSetup::UpdateField()
@@ -107,136 +108,150 @@ void ElectricFieldSetup::UpdateField()
 // Register this field to 'global' Field Manager and 
 // Create Stepper and Chord Finder with predefined type, minstep (resp.)
 
-  SetStepper();
+	  SetStepper();
+	  G4cout<<"The minimal step is equal to "<<fMinStep/mm<<" mm"<<G4endl ;
 
-  G4cout<<"The minimal step is equal to "<<fMinStep/mm<<" mm"<<G4endl ;
+	  fFieldManager->SetDetectorField(fEMfield );
+	  fLocalFieldManager->SetDetectorField(fLocalEMfield );
 
-  fFieldManager->SetDetectorField(fEMfield );
-  fLocalFieldManager->SetDetectorField(fLocalEMfield );
+	  if(fChordFinder) delete fChordFinder;
+	  if(fLocalChordFinder) delete fLocalChordFinder;
 
-  if (fChordFinder) delete fChordFinder;
-  if(fLocalChordFinder) delete fLocalChordFinder;
+	  fIntgrDriver = new G4MagInt_Driver(fMinStep,
+	                                     fStepper,
+	                                     fStepper->GetNumberOfVariables());
 
-  fIntgrDriver = new G4MagInt_Driver(fMinStep, 
-                                     fStepper, 
-                                     fStepper->GetNumberOfVariables());
+      fLocalIntgrDriver = new G4MagInt_Driver(fMinStep,
+	                                          fLocalStepper,
+	                                          fLocalStepper->GetNumberOfVariables());
 
-  fLocalIntgrDriver = new G4MagInt_Driver(fMinStep,
-                                      fLocalStepper,
-                                      fLocalStepper->GetNumberOfVariables());
+      fChordFinder = new G4ChordFinder(fIntgrDriver);
 
-  fChordFinder = new G4ChordFinder(fIntgrDriver);
-  fLocalChordFinder = new G4ChordFinder(fLocalIntgrDriver);
+	  fLocalChordFinder = new G4ChordFinder(fLocalIntgrDriver);
 
-  fFieldManager->SetChordFinder(fChordFinder);
-  fLocalFieldManager->SetChordFinder(fLocalChordFinder);
+	  fFieldManager->SetChordFinder( fChordFinder );
+	  fLocalFieldManager->SetChordFinder( fLocalChordFinder );
+
 
 }
 
 void ElectricFieldSetup::SetStepper()
 {
+	  G4int nvar = 8;
 
-  G4int nvar = 8;
-  if (fStepper) delete fStepper;
-  
-  switch ( fStepperType ) 
-  {
-    case 0:  
-      fStepper = new G4ExplicitEuler( fEquation, nvar );
-      fLocalStepper = new G4ExplicitEuler( fLocalEquation, nvar );
-      G4cout<<"G4ExplicitEuler is calledS"<<G4endl;     
-      break;
-    case 1:  
-      fStepper = new G4ImplicitEuler( fEquation, nvar );
-      fLocalStepper = new G4ImplicitEuler( fLocalEquation, nvar );
-      G4cout<<"G4ImplicitEuler is called"<<G4endl;     
-      break;
-    case 2:  
-      fStepper = new G4SimpleRunge( fEquation, nvar );
-      fLocalStepper = new G4SimpleRunge( fLocalEquation, nvar );
-      G4cout<<"G4SimpleRunge is called"<<G4endl;     
-      break;
-    case 3:  
-      fStepper = new G4SimpleHeum( fEquation, nvar );
-      fLocalStepper = new G4SimpleHeum( fLocalEquation, nvar );
-      G4cout<<"G4SimpleHeum is called"<<G4endl;     
-      break;
-    case 4:  
-      fStepper = new G4ClassicalRK4( fEquation, nvar );
-      fLocalStepper = new G4ClassicalRK4( fLocalEquation, nvar );
-      G4cout<<"G4ClassicalRK4 (default) is called"<<G4endl;     
-      break;
-    case 5:  
-      fStepper = new G4CashKarpRKF45( fEquation, nvar );
-      fLocalStepper = new G4CashKarpRKF45( fLocalEquation, nvar );
-      G4cout<<"G4CashKarpRKF45 is called"<<G4endl;     
-      break;
-    case 6:  
-      fStepper = 0; // new G4RKG3_Stepper( fEquation, nvar );
-      fLocalStepper = 0;
-      G4cout<<"G4RKG3_Stepper is not currently working for Electric Field"<<G4endl;     
-      break;
-    case 7:  
-      fStepper = 0; // new G4HelixExplicitEuler( fEquation );
-      fLocalStepper = 0;
-      G4cout<<"G4HelixExplicitEuler is not valid for Electric Field"<<G4endl;     
-      break;
-    case 8:  
-      fStepper = 0; // new G4HelixImplicitEuler( fEquation ); 
-      fLocalStepper = 0;
-      G4cout<<"G4HelixImplicitEuler is not valid for Electric Field"<<G4endl;     
-      break;
-    case 9:  
-      fStepper = 0; // new G4HelixSimpleRunge( fEquation );   
-      fLocalStepper = 0;
-      G4cout<<"G4HelixSimpleRunge is not valid for Electric Field"<<G4endl;     
-      break;
-    default: fStepper = 0, fLocalStepper = 0;
-  }
+	  if(fStepper) delete fStepper;
+      G4cout << "MOFO " << fStepperType << G4endl;
+	  switch ( fStepperType )
+	  {
+	  case 0:
+	      fStepper = new G4ExplicitEuler( fEquation, nvar );
+	      fLocalStepper = new G4ExplicitEuler( fLocalEquation, nvar );
+	      G4cout<<"G4ExplicitEuler is calledS"<<G4endl;
+	      break;
+	    case 1:
+	      fStepper = new G4ImplicitEuler( fEquation, nvar );
+	      fLocalStepper = new G4ImplicitEuler( fLocalEquation, nvar );
+	      G4cout<<"G4ImplicitEuler is called"<<G4endl;
+	      break;
+	    case 2:
+	      fStepper = new G4SimpleRunge( fEquation, nvar );
+	      fLocalStepper = new G4SimpleRunge( fLocalEquation, nvar );
+	      G4cout<<"G4SimpleRunge is called"<<G4endl;
+	      break;
+	    case 3:
+	      fStepper = new G4SimpleHeum( fEquation, nvar );
+	      fLocalStepper = new G4SimpleHeum( fLocalEquation, nvar );
+	      G4cout<<"G4SimpleHeum is called"<<G4endl;
+	      break;
+	    case 4:
+	      fStepper = new G4ClassicalRK4( fEquation, nvar );
+	      fLocalStepper = new G4ClassicalRK4( fLocalEquation, nvar );
+	      G4cout<<"G4ClassicalRK4 (default) is called"<<G4endl;
+	      break;
+	    case 5:
+	      fStepper = new G4CashKarpRKF45( fEquation, nvar );
+	      fLocalStepper = new G4CashKarpRKF45( fLocalEquation, nvar );
+	      G4cout<<"G4CashKarpRKF45 is called"<<G4endl;
+	      break;
+	    case 6:
+	      fStepper = 0; // new G4RKG3_Stepper( fEquation, nvar );
+	      fLocalStepper = 0;
+	      G4cout<<"G4RKG3_Stepper is not currently working for Electric Field"<<G4endl;
+	      break;
+	    case 7:
+	      fStepper = 0; // new G4HelixExplicitEuler( fEquation );
+	      fLocalStepper = 0;
+	      G4cout<<"G4HelixExplicitEuler is not valid for Electric Field"<<G4endl;
+	      break;
+	    case 8:
+	      fStepper = 0; // new G4HelixImplicitEuler( fEquation );
+	      fLocalStepper = 0;
+	      G4cout<<"G4HelixImplicitEuler is not valid for Electric Field"<<G4endl;
+	      break;
+	    case 9:
+	      fStepper = 0; // new G4HelixSimpleRunge( fEquation );
+	      fLocalStepper = 0;
+	      G4cout<<"G4HelixSimpleRunge is not valid for Electric Field"<<G4endl;
+	      break;
+
+		default: fStepper = 0, fLocalStepper = 0;
+	  }
 }
 
-void ElectricFieldSetup::SetFieldValue(G4double fieldValue)
+void ElectricFieldSetup::SetFieldValue(G4double fieldStrength)
 {
-// Set the value of the Global Field to fieldValue along Z
 
-  G4ThreeVector fieldVector( 0.0, 0.0, fieldValue );  
+	  G4ThreeVector fieldSetVec(0.0, 0.0, fieldStrength);
+	  this->SetFieldValue( fieldSetVec );
 
-  SetFieldValue( fieldVector );
 }
 
 void ElectricFieldSetup::SetFieldValue(G4ThreeVector fieldVector)
 {
-// Set the value of the Global Field value to fieldVector
 
-  // Find the Field Manager for the global field
-  G4FieldManager* fieldMgr= GetGlobalFieldManager();
-    
-  if (fieldVector != G4ThreeVector(0.,0.,0.))
-  { 
-    if (fEMfield) delete fEMfield;
-    fEMfield = new G4UniformElectricField(fieldVector);
 
-    fEquation->SetFieldObj(fEMfield);  // must now point to the new field
+	  if(fEMfield) delete fEMfield;
 
-    // UpdateField();
-   
-    fieldMgr->SetDetectorField(fEMfield);
-  }
-  else 
-  {
-    // If the new field's value is Zero, then it is best to
-    //  insure that it is not used for propagation.
-    if (fEMfield) delete fEMfield;
-    fEMfield = 0;
-    fEquation->SetFieldObj(fEMfield);   // As a double check ...
-    fieldMgr->SetDetectorField(fEMfield);
-  }
+	  if(fieldVector != G4ThreeVector(0.,0.,0.))
+	  {
+	    fEMfield = new  G4UniformElectricField(fieldVector);
+	  }
+	  else
+	  {
+	    // If the new field's value is Zero, then
+	    //  setting the pointer to zero ensures
+	    //  that it is not used for propagation.
+	    fEMfield = 0;
+	  }
+
+	  // Either
+	  //   - UpdateField() to reset all (ChordFinder, Equation);
+	     // UpdateField();
+	  //   or simply update the field manager & equation of motion
+	  //      with pointer to new field
+	  GetGlobalFieldManager()->SetDetectorField(fEMfield);
+	  fEquation->SetFieldObj( fEMfield );
+
+
+
 }
 
 G4FieldManager*  ElectricFieldSetup::GetGlobalFieldManager()
 {
-//  Utility method
 
   return G4TransportationManager::GetTransportationManager()
-           ->GetFieldManager();
+                          ->GetFieldManager();
+
 }
+
+G4ThreeVector ElectricFieldSetup::GetConstantFieldValue()
+{
+  static G4double fieldValue[6],  position[4];
+  position[0] = position[1] = position[2] = position[3] = 0.0;
+
+  fEMfield->GetFieldValue( position, fieldValue);
+  G4ThreeVector fieldVec(fieldValue[0], fieldValue[1], fieldValue[2]);
+
+  return fieldVec;
+}
+

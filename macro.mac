@@ -2,13 +2,14 @@
 
 /control/verbose 2
 /run/verbose 2
+#/tracking/verbose 1
 
 #------------------ Define physics ------------------#
 /testem/phys/addPhysics option
-#/testem/phys/setGCut 100.0 um
-#/testem/phys/setECut 100.0 um
-/testem/phys/setGCut 1.0 mm
-/testem/phys/setECut 1.0 mm
+/testem/phys/setGCut 100.0 um
+/testem/phys/setECut 100.0 um
+#/testem/phys/setGCut 1.0 mm
+#/testem/phys/setECut 1.0 mm
 /cuts/setLowEdge 250 eV
 #
 /run/initialize
@@ -22,9 +23,9 @@
 
 #------------------ Ion chamber field strength ------------------#
 
-/field/setStepperType 4
-/field/setMinStep 0.5 mm
-/field/update
+#/field/setStepperType 4
+#/field/setMinStep 0.5 mm
+#/field/update
 
 #------------------ Define detector ------------------#
 
@@ -34,10 +35,10 @@
 #------------------ Define source geometry ------------------#
 
 /gun/isotropy forward
-/gun/origin 0.0 0.0 -200.0 mm
+/gun/origin 0.0 0.0 -79.0 mm
 /gun/inpenergy 20.0 keV
-/gun/distribution square
-/gun/diameter 2.0 mm
+/gun/distribution disc
+/gun/diameter 5.0 mm
 
 #/control/execute vis.mac
 
@@ -48,4 +49,4 @@
 
 #------------------ Define number of events ------------------#
 
-/run/beamOn 50
+/run/beamOn 50000000

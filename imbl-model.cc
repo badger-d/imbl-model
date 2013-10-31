@@ -55,14 +55,17 @@ int main(int argc,char** argv) {
       seed = atoi(argv[2]);
       G4cout << "Input random seed is " << seed << G4endl;
    }
-
+   //seed = 10767667192523326472;
    CLHEP::HepRandom::setTheSeed(seed);
    CLHEP::HepRandom::showEngineStatus();
+
+   //CLHEP::HepRandom::saveEngineStatus("./currentEvent-MRD.rndm");
+   //CLHEP::HepRandom::restoreEngineStatus("./currentEvent-MRD.rndm");
 
    //Initialise relevant classes ------------------------------------------
    // Run manager
    G4RunManager * runManager = new G4RunManager;
-
+   //runManager->SetRandomNumberStore(true);
    //UserInitialization classes (mandatory)
    DetectorConstruction* detector = new DetectorConstruction;
    runManager->SetUserInitialization(detector);
