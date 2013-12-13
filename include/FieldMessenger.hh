@@ -23,6 +23,14 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file field/field03/include/FieldMessenger.hh
+/// \brief Definition of the FieldMessenger class
+//
+// $Id$
+// 
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 #ifndef FieldMessenger_h
 #define FieldMessenger_h 1
@@ -30,32 +38,29 @@
 #include "G4UImessenger.hh"
 #include "globals.hh"
 
-class ElectricFieldSetup;
+class FieldSetup;
 class G4UIdirectory;
-class G4UIcmdWithAString;
 class G4UIcmdWithAnInteger;
-class G4UIcmdWithADouble;
 class G4UIcmdWithADoubleAndUnit;
 class G4UIcmdWithoutParameter;
+
 
 class FieldMessenger: public G4UImessenger
 {
   public:
-    FieldMessenger(ElectricFieldSetup* );
+    FieldMessenger(FieldSetup* );
     ~FieldMessenger();
     
     virtual void SetNewValue(G4UIcommand*, G4String);
     
   private:
 
-    ElectricFieldSetup*     fElFieldSetup;
+    FieldSetup*             fEMfieldSetup;
     G4UIdirectory*             fFieldDir;
     G4UIcmdWithAnInteger*      fStepperCmd;
-    G4UIcmdWithADoubleAndUnit* fElFieldCmd;
+    G4UIcmdWithADoubleAndUnit* fMagFieldCmd;
     G4UIcmdWithADoubleAndUnit* fMinStepCmd;
     G4UIcmdWithoutParameter*   fUpdateCmd;
-
-
 };
 
 #endif

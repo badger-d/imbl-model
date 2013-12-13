@@ -1,134 +1,149 @@
-//#############################################################################
-// file name: silicon_wafers.cc
-// This is the main file for the Si/HPD model. If you want to run this model
-// on some older versions of Geant4, remove all of the "CLHEP::" identifiers 
-// and add "using namespace CLHEP" at the top of the file.
-// You might also need to swap any "G4VisExecutive" reference with "G4VisManager"
 //
+// ********************************************************************
+// * License and Disclaimer                                           *
+// *                                                                  *
+// * The  Geant4 software  is  copyright of the Copyright Holders  of *
+// * the Geant4 Collaboration.  It is provided  under  the terms  and *
+// * conditions of the Geant4 Software License,  included in the file *
+// * LICENSE and available at  http://cern.ch/geant4/license .  These *
+// * include a list of copyright holders.                             *
+// *                                                                  *
+// * Neither the authors of this software system, nor their employing *
+// * institutes,nor the agencies providing financial support for this *
+// * work  make  any representation or  warranty, express or implied, *
+// * regarding  this  software system or assume any liability for its *
+// * use.  Please see the license in the file  LICENSE  and URL above *
+// * for the full disclaimer and the limitation of liability.         *
+// *                                                                  *
+// * This  code  implementation is the result of  the  scientific and *
+// * technical work of the GEANT4 collaboration.                      *
+// * By using,  copying,  modifying or  distributing the software (or *
+// * any work based  on the software)  you  agree  to acknowledge its *
+// * use  in  resulting  scientific  publications,  and indicate your *
+// * acceptance of all terms of the Geant4 Software license.          *
+// ********************************************************************
 //
-// Author: Toby Beveridge
-//#############################################################################
 
 #include <boost/cstdint.hpp>
 #include <boost/date_time.hpp>
 #include <boost/thread.hpp>
 
+#include "G4RunManager.hh"
+#include "G4UImanager.hh"
+#include "Randomize.hh"
+
 #include "DetectorConstruction.hh"
 #include "PhysicsList.hh"
 #include "PrimaryGeneratorAction.hh"
-#include "EventAction.hh"
 #include "RunAction.hh"
-
-#include "G4RunManager.hh"
-#include "G4UImanager.hh"
-#include "G4UIterminal.hh"
-#include "G4UItcsh.hh"
-#include "Randomize.hh" 
-#include <time.h>		
-#include <sys/time.h>
+#include "EventAction.hh"
 
 #ifdef G4VIS_USE
 #include "G4VisExecutive.hh"
 #endif
 
-
-//----------------------------------------------------------------------------
-
-int main(int argc,char** argv) {
-    const boost::system_time timeStarted = boost::get_system_time();
-
-   //choose the Random engine
-   CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
-
-   uint64_t seed = 0;
-   std::ifstream randomFile;
-
-   randomFile.exceptions(~std::ios::goodbit);
-   randomFile.open("/dev/random", std::ios::binary);
-   randomFile.read((char *) & seed, sizeof(seed));
-   randomFile.close();
-
-   G4cout << "Random seed is " << seed << G4endl;
-
-   if (argc == 3) {
-      // second argument is assumed to be random seed
-      seed = atoi(argv[2]);
-      G4cout << "Input random seed is " << seed << G4endl;
-   }
-
-   CLHEP::HepRandom::setTheSeed(seed);
-   CLHEP::HepRandom::showEngineStatus();
-
-   //CLHEP::HepRandom::saveEngineStatus("./currentEvent-MRD.rndm");
-   //CLHEP::HepRandom::restoreEngineStatus("./currentEvent-MRD.rndm");
-
-   //Initialise relevant classes ------------------------------------------
-   // Run manager
-   G4RunManager * runManager = new G4RunManager;
-   //runManager->SetRandomNumberStore(true);
-   //UserInitialization classes (mandatory)
-   DetectorConstruction* detector = new DetectorConstruction;
-   runManager->SetUserInitialization(detector);
-   //PhysicsList* physics = new PhysicsList;
-   //runManager->SetUserInitialization(physics);
-   runManager->SetUserInitialization(new PhysicsList());
-  
-#ifdef G4VIS_USE
-   //Visualization, if you choose to have it!
-   G4VisManager* visManager = new G4VisExecutive;
-   visManager->Initialize();
+#ifdef G4UI_USE
+#include "G4UIExecutive.hh"
 #endif
 
-  //UserAction classes
-   PrimaryGeneratorAction* generator = new PrimaryGeneratorAction(detector);
-   RunAction* run = new RunAction(detector,generator);
+int main(int argc,char** argv) 
+{
 
-   runManager->SetUserAction(generator);
-   runManager->SetUserAction(new EventAction(generator, run, detector));
-   runManager->SetUserAction(run);
+	const boost::system_time timeStarted = boost::get_system_time();
 
-   //Initialize G4 kernel
-//   runManager->Initialize();
+	//choose the Random engine
+	CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
 
-   //get the pointer to the User Interface manager 
-   G4UImanager * UI = G4UImanager::GetUIpointer();  
+	uint64_t seed = 0;
+	std::ifstream randomFile;
 
-   //start a session (interactive or batch)------------------------------------------
-   if(argc==1)
-   // Define (G)UI terminal for interactive mode  
-   { 
-    	// G4UIterminal is a (dumb) terminal.
-	G4UIsession * session = 0;
-#ifdef G4UI_USE_TCSH
-   session = new G4UIterminal(new G4UItcsh);      
-#else
-   session = new G4UIterminal();
-#endif    
-   //John change 26MAY09 --> don't default to using a vis file as it is bad in big runs
-   //UI->ApplyCommand("/control/execute vis.mac");    
-   session->SessionStart();
-    	delete session;
-   }
-   else
-   // Batch mode
-   { 
-	G4String command = "/control/execute ";
-	G4String fileName = argv[1];
-	UI->ApplyCommand(command+fileName);
-   }
-   //----------------------------------------------------------------------------------
-   //tidy up:
+	randomFile.exceptions(~std::ios::goodbit);
+	randomFile.open("/dev/random", std::ios::binary);
+	randomFile.read((char *) & seed, sizeof(seed));
+	randomFile.close();
+
+	G4cout << "Random seed is " << seed << G4endl;
+
+	if (argc == 3) {
+		// second argument is assumed to be random seed
+		seed = atoi(argv[2]);
+		G4cout << "Input random seed is " << seed << G4endl;
+	}
+
+	CLHEP::HepRandom::setTheSeed(seed);
+	CLHEP::HepRandom::showEngineStatus();
+
+	//CLHEP::HepRandom::saveEngineStatus("./currentEvent-MRD.rndm");
+	//CLHEP::HepRandom::restoreEngineStatus("./currentEvent-MRD.rndm");
+
+	//Initialise relevant classes ------------------------------------------
+
+	// Run manager
+	G4RunManager * runManager = new G4RunManager;
+
+	// Set mandatory initialization classes
+	DetectorConstruction* detector;
+	detector = new DetectorConstruction;
+	runManager->SetUserInitialization(detector);
+	runManager->SetUserInitialization(new PhysicsList());
+
+	// Set user action classes
+	PrimaryGeneratorAction* generator = new PrimaryGeneratorAction(detector);
+
+	runManager->SetUserAction(generator);
+
+	RunAction* runAction = new RunAction(detector,generator);
+
+	runManager->SetUserAction(runAction);
+
+	EventAction* eventAction = new EventAction(runAction, detector);
+
+	runManager->SetUserAction(eventAction);
+
+	// Initialize G4 kernel, physics tables ...
+	// Initialized in macro so I've commented out the line below.
+	//runManager->Initialize();
+
 #ifdef G4VIS_USE
-   delete visManager;
+
+	// visualization manager
+
+	G4VisManager* visManager = new G4VisExecutive;
+	visManager->Initialize();
+
+#endif 
+
+	// Get the pointer to the User Interface manager
+
+	G4UImanager* UImanager = G4UImanager::GetUIpointer();
+
+	if (argc!=1)   // batch mode
+	{
+		G4String command = "/control/execute ";
+		G4String fileName = argv[1];
+		UImanager->ApplyCommand(command+fileName);
+	}
+	else
+	{  // interactive mode : define UI session
+#ifdef G4UI_USE
+		G4UIExecutive* ui = new G4UIExecutive(argc, argv);
+		ui->SessionStart();
+		delete ui;
 #endif
-   delete runManager;
-   
-   const boost::system_time timeEnded = boost::get_system_time();
-   const uint64_t timeTakenMs = (timeEnded - timeStarted).total_milliseconds();
+	}
 
-   G4cout << "Total time: " << timeTakenMs << " ms" << std::endl;
+	// job termination
 
-   return 0;
+#ifdef G4VIS_USE
+	delete visManager;
+#endif
+	delete runManager;
+
+	const boost::system_time timeEnded = boost::get_system_time();
+	const uint64_t timeTakenMs = (timeEnded - timeStarted).total_milliseconds();
+
+	G4cout << "Total time: " << timeTakenMs << " ms" << std::endl;
+
+
+	return 0;
 }
-
-//----------------------------------------------------------------------------

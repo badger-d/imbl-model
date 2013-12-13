@@ -7,7 +7,6 @@
 #include "globals.hh"
 #include <fstream>
 #include "DetectorHits.hh"
-#include "PrimaryGeneratorAction.hh"
 #include <vector>
 #include <algorithm>
 #include "RunAction.hh"
@@ -21,7 +20,7 @@ class DetectorConstruction;
 class EventAction : public G4UserEventAction
 {
 public:
-  EventAction(PrimaryGeneratorAction*, RunAction*, DetectorConstruction*);
+  EventAction(RunAction*, DetectorConstruction*);
   virtual ~EventAction();
 
   virtual void BeginOfEventAction(const G4Event*);
@@ -30,7 +29,7 @@ public:
 private:
 
   // Process the interactions in the ion chamber.
-  void Process_Ion_Cham_Interacs(std::vector<DetectorHits*> &time_sort_all_hits, vector<DetectorHits*> &time_sort_phot_hits);
+  void Process_Ion_Cham_Interacs(std::vector<DetectorHits*> &time_sort_all_hits, std::vector<DetectorHits*> &time_sort_phot_hits);
 
   // Method that appends hits to vector.
   void Vectorize_Hits(std::vector<DetectorHits*> &ion_cham_all_hits, std::vector<DetectorHits*> &ion_cham_phot_hits, DetectorHitsCollection* hits_col, std::vector<G4double> &all_hit_times, std::vector<G4double> &phot_hit_times);
@@ -69,36 +68,35 @@ private:
   bool All_Electron_Interacs_In_Sens(std::vector<DetectorHits*> &all_hits);
 
   // Get the progeny of a photon interaction for photoelectric absorption.
-  void Get_Photon_Progeny_Phot(vector<DetectorHits*> &all_hits, unsigned int init_interac_index, vector<DetectorHits*> &daughter_tracks);
+  void Get_Photon_Progeny_Phot(std::vector<DetectorHits*> &all_hits, unsigned int init_interac_index, std::vector<DetectorHits*> &daughter_tracks);
 
   // Get the progeny of a photon interaction for Compton scatter.
-  void Get_Photon_Progeny_Scat(vector<DetectorHits*> &all_hits, unsigned int init_interac_index, vector<DetectorHits*> &daughter_tracks);
+  void Get_Photon_Progeny_Scat(std::vector<DetectorHits*> &all_hits, unsigned int init_interac_index, std::vector<DetectorHits*> &daughter_tracks);
 
   // Get the progeny of a fluorescence photon interactions.
-  void Get_Photon_Progeny_Fluor(vector<DetectorHits*> &all_hits, vector<unsigned int> &indices, vector<DetectorHits*> &daughter_tracks);
+  void Get_Photon_Progeny_Fluor(std::vector<DetectorHits*> &all_hits, std::vector<unsigned int> &indices, std::vector<DetectorHits*> &daughter_tracks);
 
   // Add the track ID to the vector.
-  void Add_Track_ID(unsigned int track, vector<unsigned int> &parent_vector);
+  void Add_Track_ID(unsigned int track, std::vector<unsigned int> &parent_vector);
 
   // Determine whether the current interaction has a parent and is therefore progeny.
-  bool Has_Relevant_Parent(unsigned int parent, vector<unsigned int> parent_vector);
+  bool Has_Relevant_Parent(unsigned int parent, std::vector<unsigned int> parent_vector);
 
   // Get the first primary photon interaction.
-  unsigned int Get_First_Photon_Index(vector<DetectorHits*> &all_hits);
+  unsigned int Get_First_Photon_Index(std::vector<DetectorHits*> &all_hits);
 
   // Determine whether or not a scatter has occurred.
   bool Has_Scat(std::vector<DetectorHits*> &phot_hits);
 
   // Determine whether or not a fluorescence photon is present.
-  bool Has_Fluor(vector<DetectorHits*> &phot_hits);
+  bool Has_Fluor(std::vector<DetectorHits*> &phot_hits);
 
   // Get vector of interaction indices for fluorescence interactions.
-  void Get_Fluor_Photon_Indices(vector<DetectorHits*> &all_hits, vector<unsigned int> &indices);
+  void Get_Fluor_Photon_Indices(std::vector<DetectorHits*> &all_hits, std::vector<unsigned int> &indices);
 
   // Determine whether part of the scatter event has left the sensitive volume.
-  bool Has_Left_Sens(vector<DetectorHits*> &phot_hits, unsigned int layer, G4String volume);
+  bool Has_Left_Sens(std::vector<DetectorHits*> &phot_hits, unsigned int layer, G4String volume);
 
-  PrimaryGeneratorAction* primary;
   RunAction* run;
   DetectorConstruction* detector;
 
@@ -109,7 +107,7 @@ private:
   G4int sample_hc_id;         // Declare hits collection id variable for the sample.
   G4int exp_hall_hc_id;       // Declare hits collection id variable for the experimental hall.
 
-  ofstream* out_file_ptr; // Declare pointer to output file that will be written to.
+  std::ofstream* out_file_ptr; // Declare pointer to output file that will be written to.
   G4String out_data;      // Declare string that can contain output file data.
 
   G4int event_id;  // Event ID counter.

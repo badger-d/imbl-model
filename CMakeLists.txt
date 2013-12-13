@@ -42,6 +42,7 @@ target_link_libraries(imbl-exe ${Geant4_LIBRARIES})
 # relies on these scripts being in the current working directory.
 #
 set(IMBL_MODEL_SCRIPTS
+  macro.mac
   vis.mac
   )
 

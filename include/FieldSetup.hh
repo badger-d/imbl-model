@@ -23,44 +23,46 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
+/// \file field/field03/include/FieldSetup.hh
+/// \brief Definition of the FieldSetup class
+//
+// $Id$
+//
 
-#ifndef ElectricFieldSetup_H
-#define ElectricFieldSetup_H
+#ifndef FieldSetup_H
+#define FieldSetup_H
 
-#include "G4ElectricField.hh"
-#include "G4UniformElectricField.hh"
+#include "G4MagneticField.hh"
+#include "G4UniformMagField.hh"
 
+class FieldMessenger;
 class G4FieldManager;
 class G4ChordFinder;
-class G4EquationOfMotion;
-class G4Mag_EqRhs;
-class G4EqMagElectricField;
+class G4Mag_UsualEqRhs;
 class G4MagIntegratorStepper;
-class G4MagInt_Driver; 
-class FieldMessenger;
 
-/// A class for control of the Electric Field of the detector.
+///  A class for setting up the Magnetic Field
 ///
-/// The field for this case is uniform.
-/// It is simply a 'setup' class that creates the field and necessary 
-/// other parts
+///  It also creates the necessary classes to control accuracy of propagation.
+///  In this example
+///    - There is a global field for most of the setup;
+///    - A local  field overides it for some volume(s) and it assumed to be 
+///      uniform.
 
-
-class ElectricFieldSetup
+class FieldSetup
 {
 
 public:
 
-  ElectricFieldSetup();               //  A zero field
-  ElectricFieldSetup(G4ThreeVector);  //  The value of the field
-
-  ~ElectricFieldSetup();
+  FieldSetup();               //  A zero field
+  FieldSetup(G4ThreeVector);  //  The value of the field
+  ~FieldSetup();
       
-  void SetStepperType( G4int i) { fStepperType = i ; }
+  void SetStepperType(G4int i) { fStepperType = i; }
 
   void SetStepper();
 
-  void SetMinStep(G4double s) { fMinStep = s ; }
+  void SetMinStep(G4double s) { fMinStep = s; }
 
   void UpdateField();
 
@@ -71,8 +73,8 @@ public:
 
 protected:
 
-  // Find the global Field Manager
-  G4FieldManager*         GetGlobalFieldManager() ;
+  G4FieldManager*         GetGlobalFieldManager();
+    // Returns the global Field Manager
 
   G4FieldManager*         fFieldManager;
   G4FieldManager*         fLocalFieldManager;
@@ -80,25 +82,19 @@ protected:
   G4ChordFinder*          fChordFinder;
   G4ChordFinder*          fLocalChordFinder;
 
-  G4EqMagElectricField*   fEquation;
-  G4EqMagElectricField*   fLocalEquation;
+  G4Mag_UsualEqRhs*       fEquation; 
+  G4Mag_UsualEqRhs*       fLocalEquation; 
 
+  G4MagneticField*        fMagneticField; 
+  G4MagneticField*        fLocalMagneticField; 
 
-  G4MagIntegratorStepper* fStepper ;
-  G4MagIntegratorStepper* fLocalStepper ;
+  G4MagIntegratorStepper* fStepper;
+  G4MagIntegratorStepper* fLocalStepper;
+  G4int                   fStepperType;
 
   G4double                fMinStep;
-  G4int                   fStepperType;
-  FieldMessenger*         fFieldMessenger;
-
-  G4ElectricField*        fEMfield;
-  G4ElectricField*        fLocalEMfield;
-
-  G4MagInt_Driver*        fIntgrDriver;
-  G4MagInt_Driver*        fLocalIntgrDriver;
-
-
-  G4ThreeVector           fElFieldValue ;
+ 
+  FieldMessenger*      fFieldMessenger;
 
 };
 

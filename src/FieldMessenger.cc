@@ -23,30 +23,37 @@
 // * acceptance of all terms of the Geant4 Software license.          *
 // ********************************************************************
 //
-/// \file field/field02/src/FieldMessenger.cc
+/// \file field/field03/src/FieldMessenger.cc
 /// \brief Implementation of the FieldMessenger class
 //
 // $Id$
 // 
 
 #include "FieldMessenger.hh"
-#include "ElectricFieldSetup.hh"
+#include "FieldSetup.hh"
 
 #include "G4UIdirectory.hh"
-#include "G4UIcmdWithAString.hh"
 #include "G4UIcmdWithAnInteger.hh"
-#include "G4UIcmdWithADouble.hh"
 #include "G4UIcmdWithADoubleAndUnit.hh"
 #include "G4UIcmdWithoutParameter.hh"
+#include "G4SystemOfUnits.hh"
 
-FieldMessenger::FieldMessenger(ElectricFieldSetup* fieldSetup)
- : G4UImessenger(), fElFieldSetup(fieldSetup)
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
+FieldMessenger::FieldMessenger(FieldSetup* pEMfield)
+ : G4UImessenger(),
+   fEMfieldSetup(pEMfield),
+   fFieldDir(0),
+   fStepperCmd(0),
+   fMagFieldCmd(0),
+   fMinStepCmd(0),
+   fUpdateCmd(0)
 { 
   fFieldDir = new G4UIdirectory("/field/");
   fFieldDir->SetGuidance(" field tracking control.");
 
   fStepperCmd = new G4UIcmdWithAnInteger("/field/setStepperType",this);
-  fStepperCmd->SetGuidance("Select stepper type for electric field");
+  fStepperCmd->SetGuidance("Select stepper type for magnetic field");
   fStepperCmd->SetParameterName("choice",true);
   fStepperCmd->SetDefaultValue(4);
   fStepperCmd->AvailableForStates(G4State_PreInit,G4State_Idle);
@@ -57,46 +64,56 @@ FieldMessenger::FieldMessenger(ElectricFieldSetup* fieldSetup)
   fUpdateCmd->SetGuidance("if you changed geometrical value(s).");
   fUpdateCmd->AvailableForStates(G4State_Idle);
       
-  fElFieldCmd = new G4UIcmdWithADoubleAndUnit("/field/setFieldZ",this);  
-  fElFieldCmd->SetGuidance("Define uniform Electric field.");
-  fElFieldCmd->SetGuidance("Electric field will be in Z direction.");
-  fElFieldCmd->SetGuidance("Value of Electric field has to be given in volt/m");
-  fElFieldCmd->SetParameterName("Ez",false,false);
-  fElFieldCmd->SetDefaultUnit("volt/m");
-  fElFieldCmd->AvailableForStates(G4State_Idle); 
+  fMagFieldCmd = new G4UIcmdWithADoubleAndUnit("/field/setFieldZ",this);  
+  fMagFieldCmd->SetGuidance("Define magnetic field.");
+  fMagFieldCmd->SetGuidance("Magnetic field will be in Z direction.");
+  fMagFieldCmd->SetParameterName("Bz",false,false);
+  fMagFieldCmd->SetDefaultUnit("tesla");
+  fMagFieldCmd->AvailableForStates(G4State_Idle); 
  
   fMinStepCmd = new G4UIcmdWithADoubleAndUnit("/field/setMinStep",this);  
   fMinStepCmd->SetGuidance("Define minimal step");
+  fMinStepCmd->SetGuidance("Magnetic field will be in Z direction.");
   fMinStepCmd->SetParameterName("min step",false,false);
   fMinStepCmd->SetDefaultUnit("mm");
   fMinStepCmd->AvailableForStates(G4State_Idle);  
 }
 
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
+
 FieldMessenger::~FieldMessenger()
 {
   delete fStepperCmd;
-  delete fElFieldCmd;
+  delete fMagFieldCmd;
   delete fMinStepCmd;
-  delete fFieldDir;
   delete fUpdateCmd;
+  delete fFieldDir;
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....
 
 void FieldMessenger::SetNewValue( G4UIcommand* command, G4String newValue)
 { 
   if( command == fStepperCmd )
   { 
-    fElFieldSetup->SetStepperType(fStepperCmd->GetNewIntValue(newValue));
+    fEMfieldSetup->SetStepperType(fStepperCmd->GetNewIntValue(newValue));
   }  
   if( command == fUpdateCmd )
   { 
-    fElFieldSetup->UpdateField(); 
+    fEMfieldSetup->UpdateField(); 
   }
-  if( command == fElFieldCmd )
+  if( command == fMagFieldCmd )
   { 
-    fElFieldSetup->SetFieldValue(fElFieldCmd->GetNewDoubleValue(newValue));
+    fEMfieldSetup->SetFieldValue(fMagFieldCmd->GetNewDoubleValue(newValue));
+    // Check the value
+    G4cout << "Set field value to " <<     
+      fEMfieldSetup->GetConstantFieldValue() / gauss << " Gauss " << G4endl;
+
   }
   if( command == fMinStepCmd )
   { 
-    fElFieldSetup->SetMinStep(fMinStepCmd->GetNewDoubleValue(newValue));
+    fEMfieldSetup->SetMinStep(fMinStepCmd->GetNewDoubleValue(newValue));
   }
 }
+
+//....oooOO0OOooo........oooOO0OOooo........oooOO0OOooo........oooOO0OOooo....

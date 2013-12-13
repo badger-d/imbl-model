@@ -10,8 +10,8 @@ using namespace std;
 
 EventAction::EventAction(RunAction* RA, DetectorConstruction* DC)
 {
-   run = RA;
-   detector = DC;
+	run = RA;
+	detector = DC;
 
 }
 
@@ -21,31 +21,31 @@ EventAction::~EventAction()
 
 void EventAction::BeginOfEventAction(const G4Event* evt)
 {
-  G4SDManager* SDman = G4SDManager::GetSDMpointer();
+	G4SDManager* SDman = G4SDManager::GetSDMpointer();
 
-  // Check if the ion chamber is included in the detector construction.
-  if(detector->Get_Ion_Cham_Flag() == "on")
-    {
-      ion_cham_layer_hc_id = SDman->GetCollectionID("ion_cham_layer/HitsCollection");
-      ion_cham_shell_hc_id = SDman->GetCollectionID("ion_cham_shell/HitsCollection");
-    }
+	// Check if the ion chamber is included in the detector construction.
+	if(detector->Get_Ion_Cham_Flag() == "on")
+	{
+		ion_cham_layer_hc_id = SDman->GetCollectionID("ion_cham_layer/HitsCollection");
+		ion_cham_shell_hc_id = SDman->GetCollectionID("ion_cham_shell/HitsCollection");
+	}
 
-  // Check if the sample is included in the detector construction.
-  if(detector->Get_Sample_Flag() == "on")
-     {
-	   sample_hc_id = SDman->GetCollectionID("sample/HitsCollection");
-     }
+	// Check if the sample is included in the detector construction.
+	if(detector->Get_Sample_Flag() == "on")
+	{
+		sample_hc_id = SDman->GetCollectionID("sample/HitsCollection");
+	}
 
-  // The experimental hall must be included by definition so no need to test this.
-  exp_hall_hc_id = SDman->GetCollectionID("exp_hall/HitsCollection");
+	// The experimental hall must be included by definition so no need to test this.
+	exp_hall_hc_id = SDman->GetCollectionID("exp_hall/HitsCollection");
 
-  // Increment the event counter by 1.
-  event_id = evt->GetEventID() + 1;
+	// Increment the event counter by 1.
+	event_id = evt->GetEventID() + 1;
 
-  // Print the event number every 10000 lines.
-  if (event_id < 101 || event_id%10000 == 0)
-  G4cout << "-------------------------------------------->>> Event "
-	 << event_id << G4endl;
+	// Print the event number every 10000 lines.
+	if (event_id < 101 || event_id%10000 == 0)
+		G4cout << "-------------------------------------------->>> Event "
+		<< event_id << G4endl;
 
 }
 
@@ -90,7 +90,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 			// Get the hits collection ID for the gas layers of the ion chamber.
 			ion_cham_layer_hc = (DetectorHitsCollection*) (HCE->GetHC(ion_cham_layer_hc_id));
 
-            // Test if there are interaction entries to read out.
+			// Test if there are interaction entries to read out.
 			if (ion_cham_layer_hc->entries() > 0) {
 
 				// Assume that the layer that of the ionisation chamber gas stack is the middle layer (numbering starts from 0, so sens_layer is 1 for a 3 layer volume.).
@@ -103,7 +103,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 				shell_vol = "ion_cham_shell_phys";
 
 				// Only need to process the event if energy is deposited between the plates - so check this.
-                if (Energy_Dep_Between_Plates(ion_cham_layer_hc)){
+				if (Energy_Dep_Between_Plates(ion_cham_layer_hc)){
 
 					// Add the hits to the vector.
 					Vectorize_Hits(all_hits, phot_hits, ion_cham_layer_hc, all_hit_times, phot_hit_times);
@@ -135,7 +135,7 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 						num_trigs_exp_hall += 1;
 						tot_num_trigs += 1;
 					}
-                }
+				}
 			}
 		}
 	}
@@ -149,16 +149,16 @@ void EventAction::EndOfEventAction(const G4Event* evt) {
 	energy_keV_dep_plates_eloss_volb = 0.0; // Total energy deposited for photons whose progeny reached the collecting electrode - volume A.
 
 	// Test if there have been any interactions in the sensitive volume of the ion chamber.
-    if (num_trigs_ion_cham_layer > 0){
+	if (num_trigs_ion_cham_layer > 0){
 
-     	// Now time sort the vector of all interactions.
-	    Time_Sort(all_hits, all_hit_times, time_sort_all_hits);
+		// Now time sort the vector of all interactions.
+		Time_Sort(all_hits, all_hit_times, time_sort_all_hits);
 
-	    // Now time sort the vector of photon interactions.
-	    Time_Sort(phot_hits, phot_hit_times, time_sort_phot_hits);
+		// Now time sort the vector of photon interactions.
+		Time_Sort(phot_hits, phot_hit_times, time_sort_phot_hits);
 
-	    // Process the interactions in the event.
-	    Process_Ion_Cham_Interacs(time_sort_all_hits, time_sort_phot_hits);
+		// Process the interactions in the event.
+		Process_Ion_Cham_Interacs(time_sort_all_hits, time_sort_phot_hits);
 	}
 
 }
@@ -175,13 +175,13 @@ bool EventAction::Energy_Dep_Between_Plates(DetectorHitsCollection* hits_col)
 		if ((unsigned int)cur_hit->GetCopyNumber() == sens_layer){
 			// Check that energy was actually deposited, i.e. it wasn't just a Rayleigh scatter.
 			// Get the energyof the interaction.
-		    G4double energy_keV = abs(cur_hit->GetEnergyDep() / keV);
-		    G4bool is_rayleigh = Is_Rayleigh(energy_keV);
-		    if (not is_rayleigh){
+			G4double energy_keV = abs(cur_hit->GetEnergyDep() / keV);
+			G4bool is_rayleigh = Is_Rayleigh(energy_keV);
+			if (not is_rayleigh){
 
-		    	// Found a valid energy deposit between the electrodes.
-		    	return true;
-		    }
+				// Found a valid energy deposit between the electrodes.
+				return true;
+			}
 		}
 	}
 	// Haven't managed to find a valid energy deposit.
@@ -194,9 +194,6 @@ void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all
 	// Init. output flag for file write.
 	int output_flag = -1;
 
-	// Init. var for first interaction being a Rayleigh scatter.
-	bool is_rayleigh = false;
-
 	// Init. var for first interaction being a scatter of any kind.
 	bool has_scat = false;
 
@@ -205,9 +202,6 @@ void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all
 
 	// Init. var for fluorescence photons being present.
 	bool has_fluor = false;
-
-	// Init. var for scattered photons haveing left the sensitive volume.
-	bool has_left_sens = false;
 
 	// Check if there is a photon interaction stored.
 	if ((unsigned int)time_sort_phot_hits.size() > 0){
@@ -231,7 +225,7 @@ void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all
 			// The photon is a primary.
 
 			// A strange type of interaction where the photon is not recorded may happen, so avert this.
-		    unsigned int interaction_index = Get_First_Photon_Index(time_sort_all_hits);
+			unsigned int interaction_index = Get_First_Photon_Index(time_sort_all_hits);
 
 			// Add this first interaction to the progeny for the energy sum.
 			first_phot_progeny.push_back(time_sort_all_hits[interaction_index]);
@@ -240,7 +234,7 @@ void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all
 			has_scat = Has_Scat(time_sort_phot_hits);
 
 			// Some of the energy must have left the sensitive volume otherwise its indistinguishable from the events for E_{ap}
-			has_left_sens = Has_Left_Sens(time_sort_phot_hits, sens_layer, sens_vol);
+			//bool has_left_sens = Has_Left_Sens(time_sort_phot_hits, sens_layer, sens_vol);
 
 			if (has_scat){
 
@@ -307,15 +301,15 @@ void EventAction::Process_Ion_Cham_Interacs(vector<DetectorHits*> &time_sort_all
 					}
 
 				}
-				*/
+				 */
 
 
 				// Now search for fluorescence photons.
 				has_fluor = Has_Fluor(time_sort_phot_hits);
 
-//				if ((energy_keV_dep_plates_prim_vola > 0.0000001) && (energy_keV_dep_plates_prim_volb > 0.0000001)){
-//					G4cout << time_sort_phot_hits.size() << " " << has_fluor<< " " << energy_keV_dep_plates_prim_vola + energy_keV_dep_plates_prim_volb << " " << energy_keV_dep_plates_prim_vola << " " << energy_keV_dep_plates_prim_volb << G4endl;
-//				}
+				//				if ((energy_keV_dep_plates_prim_vola > 0.0000001) && (energy_keV_dep_plates_prim_volb > 0.0000001)){
+				//					G4cout << time_sort_phot_hits.size() << " " << has_fluor<< " " << energy_keV_dep_plates_prim_vola + energy_keV_dep_plates_prim_volb << " " << energy_keV_dep_plates_prim_vola << " " << energy_keV_dep_plates_prim_volb << G4endl;
+				//				}
 
 				if (has_fluor){
 
@@ -691,14 +685,14 @@ bool EventAction::All_Electron_Interacs_In_Sens(vector<DetectorHits*> &all_hits)
 		bool is_photoelectron = EventAction::Is_Photoelectron(pre_process);
 
 		// Test if the interaction is an electron.
-        if (is_photoelectron){
+		if (is_photoelectron){
 
-        	// Test if the interaction did not stay between the plates.
-        	if (((unsigned int)cur_hit->GetCopyNumber() != sens_layer)
-        						|| ((G4String)cur_hit->GetVolume() != sens_vol)){
-        		return false;
-        	}
-        }
+			// Test if the interaction did not stay between the plates.
+			if (((unsigned int)cur_hit->GetCopyNumber() != sens_layer)
+					|| ((G4String)cur_hit->GetVolume() != sens_vol)){
+				return false;
+			}
+		}
 
 	}
 	return true;
@@ -750,7 +744,7 @@ G4double EventAction::Sum_Energies_Not_In_Hit_Vol(vector<DetectorHits*> &all_hit
 
 			// It has to be in the shell.
 			if ((G4String)cur_hit->GetVolume() == shell_volume){
-                total_energy_keV += abs(cur_hit->GetEnergyDep() / keV);
+				total_energy_keV += abs(cur_hit->GetEnergyDep() / keV);
 
 			}
 		}

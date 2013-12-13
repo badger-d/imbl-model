@@ -2,18 +2,16 @@
 
 /control/verbose 2
 /run/verbose 2
-#/tracking/verbose 1
 
 #------------------ Define physics ------------------#
+
 /testem/phys/addPhysics option
-/testem/phys/setGCut 100.0 um
-/testem/phys/setECut 100.0 um
-#/testem/phys/setGCut 1.0 mm
-#/testem/phys/setECut 1.0 mm
+/testem/phys/setGCut 1.0 mm
+/testem/phys/setECut 1.0 mm
 /cuts/setLowEdge 250 eV
-#
 /run/initialize
-#
+/run/particle/dumpCutValues
+
 /process/em/deexcitation world true true true
 /process/em/pixe true
 /process/em/auger true
@@ -23,9 +21,10 @@
 
 #------------------ Ion chamber field strength ------------------#
 
-#/field/setStepperType 4
-#/field/setMinStep 0.5 mm
-#/field/update
+/field/setStepperType 4
+/field/setMinStep 10 mm
+/field/setFieldZ 1.0 kG
+/field/update
 
 #------------------ Define detector ------------------#
 
@@ -34,9 +33,10 @@
 
 #------------------ Define source geometry ------------------#
 
+/gun/particle gamma
 /gun/isotropy forward
 /gun/origin 0.0 0.0 -79.0 mm
-/gun/inpenergy 170.0 keV
+/gun/inpenergy 250.0 keV
 /gun/distribution disc
 /gun/diameter 5.0 mm
 
