@@ -1,8 +1,8 @@
 #include "DetectorConstruction.hh"
 #include "DetectorMessenger.hh"
 #include "SensitiveDet.hh"
-//#include "G4FieldManager.hh"
-#//include "G4UniformElectricField.hh"
+#include "G4FieldManager.hh"
+#include "G4UniformElectricField.hh"
 #include "PrimaryGeneratorAction.hh"
 #include "StackParameterisation.hh"
 #include "G4Material.hh"
@@ -31,6 +31,7 @@
 #include <numeric>
 
 DetectorConstruction::DetectorConstruction()
+//:em_field_setup(0)
 {
 
   // Create an instance of the detector messenger.
@@ -68,7 +69,7 @@ DetectorConstruction::DetectorConstruction()
 DetectorConstruction::~DetectorConstruction()
 {
    delete detector_messenger;
-   //if (em_field_setup) delete em_field_setup;
+   if (em_field_setup) delete em_field_setup;
 }
 
 G4VPhysicalVolume* DetectorConstruction::Construct()

@@ -55,7 +55,7 @@ int main(int argc,char** argv) {
       seed = atoi(argv[2]);
       G4cout << "Input random seed is " << seed << G4endl;
    }
-   //seed = 10767667192523326472;
+
    CLHEP::HepRandom::setTheSeed(seed);
    CLHEP::HepRandom::showEngineStatus();
 

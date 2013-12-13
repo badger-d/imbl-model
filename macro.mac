@@ -36,7 +36,7 @@
 
 /gun/isotropy forward
 /gun/origin 0.0 0.0 -79.0 mm
-/gun/inpenergy 20.0 keV
+/gun/inpenergy 170.0 keV
 /gun/distribution disc
 /gun/diameter 5.0 mm
 

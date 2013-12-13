@@ -98,7 +98,7 @@ protected:
   G4MagInt_Driver*        fLocalIntgrDriver;
 
 
-
+  G4ThreeVector           fElFieldValue ;
 
 };
 

@@ -2,7 +2,6 @@
 #include "EventAction.hh"
 #include "G4SDManager.hh"
 #include "Randomize.hh"
-#include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "DetectorConstruction.hh"
 
