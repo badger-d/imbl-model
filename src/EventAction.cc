@@ -2,14 +2,14 @@
 #include "EventAction.hh"
 #include "G4SDManager.hh"
 #include "Randomize.hh"
+#include "PrimaryGeneratorAction.hh"
 #include "RunAction.hh"
 #include "DetectorConstruction.hh"
 
 using namespace std;
 
-EventAction::EventAction(PrimaryGeneratorAction* PGA, RunAction* RA, DetectorConstruction* DC)
+EventAction::EventAction(RunAction* RA, DetectorConstruction* DC)
 {
-   primary = PGA;
    run = RA;
    detector = DC;
 
