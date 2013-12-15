@@ -34,12 +34,15 @@
 
 #include "G4MagneticField.hh"
 #include "G4UniformMagField.hh"
+#include "G4UniformElectricField.hh"
+#include "G4EqMagElectricField.hh"
 
 class FieldMessenger;
 class G4FieldManager;
 class G4ChordFinder;
 class G4Mag_UsualEqRhs;
 class G4MagIntegratorStepper;
+class G4MagInt_Driver;
 
 ///  A class for setting up the Magnetic Field
 ///
@@ -82,11 +85,14 @@ protected:
   G4ChordFinder*          fChordFinder;
   G4ChordFinder*          fLocalChordFinder;
 
-  G4Mag_UsualEqRhs*       fEquation; 
-  G4Mag_UsualEqRhs*       fLocalEquation; 
+  G4EqMagElectricField*   fEquation;
+  G4EqMagElectricField*   fLocalEquation;
 
-  G4MagneticField*        fEMField;
-  G4MagneticField*        fLocalEMField;
+  G4UniformElectricField* fEMField;
+  G4UniformElectricField* fLocalEMField;
+
+  G4MagInt_Driver*        fIntgrDriver;
+  G4MagInt_Driver*        fLocalIntgrDriver;
 
   G4MagIntegratorStepper* fStepper;
   G4MagIntegratorStepper* fLocalStepper;

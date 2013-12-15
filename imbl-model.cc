@@ -51,9 +51,10 @@ int main(int argc,char** argv)
 
 	const boost::system_time timeStarted = boost::get_system_time();
 
-	//choose the Random engine
+	// Choose the random engine.
 	CLHEP::HepRandom::setTheEngine(new CLHEP::RanecuEngine);
 
+	// Generate seed from system file.
 	uint64_t seed = 0;
 	std::ifstream randomFile;
 
@@ -76,32 +77,42 @@ int main(int argc,char** argv)
 	//CLHEP::HepRandom::saveEngineStatus("./currentEvent-MRD.rndm");
 	//CLHEP::HepRandom::restoreEngineStatus("./currentEvent-MRD.rndm");
 
-	//Initialise relevant classes ------------------------------------------
+	// Initialise relevant classes ------------------------------------------
 
-	// Run manager
-	G4RunManager * runManager = new G4RunManager;
+	// Init. run manager.
+	G4RunManager* runManager = new G4RunManager;
 
-	// Set mandatory initialization classes
-	DetectorConstruction* detector;
-	detector = new DetectorConstruction;
+	// Init. detector construction.
+	DetectorConstruction* detector = new DetectorConstruction;
+
+	// Pass the detector into the run.
 	runManager->SetUserInitialization(detector);
-	runManager->SetUserInitialization(new PhysicsList());
 
-	// Set user action classes
+	// Init. physics list.
+	PhysicsList* physics = new PhysicsList();
+
+	// Load physics list.
+	runManager->SetUserInitialization(physics);
+
+	// Init. primary generator.
 	PrimaryGeneratorAction* generator = new PrimaryGeneratorAction(detector);
 
+	// Load primary generator.
 	runManager->SetUserAction(generator);
 
-	RunAction* runAction = new RunAction(detector,generator);
+	// Init. run action.
+	RunAction* runAction = new RunAction(detector, generator);
 
+	// Load run action.
 	runManager->SetUserAction(runAction);
 
+	// Init. event action.
 	EventAction* eventAction = new EventAction(runAction, detector);
 
+	// Load event action.
 	runManager->SetUserAction(eventAction);
 
-	// Initialize G4 kernel, physics tables ...
-	// Initialized in macro so I've commented out the line below.
+	// G4 kernel, physics tables init. in macro so I've commented out the line.
 	//runManager->Initialize();
 
 #ifdef G4VIS_USE
