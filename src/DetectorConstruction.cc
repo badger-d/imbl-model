@@ -336,12 +336,11 @@ G4VPhysicalVolume* DetectorConstruction::Construct_Geometry()
 			SDman->AddNewDetector(ion_cham_layer_sd);
 		}
 
-		// Set the logical volume to contain an electric field.
-		//ion_cham_layer_log->SetFieldManager(em_field_setup->GetLocalFieldManager(), true);
+		// Set local field manager.
+		G4bool allLocal = true ;
 
-		//ic_em_field = new G4UniformElectricField(G4ThreeVector(0.0,1000.0*kilovolt/cm,0.0));
-		//local_ic_field_mgr = new G4FieldManager(ic_em_field);
-		//ion_cham_layer_log->SetFieldManager(local_ic_field_mgr, true);
+		// Set as having EM field.
+		ion_cham_layer_log->SetFieldManager(emFieldSetup->GetLocalFieldManager(), allLocal) ;
 
 		// Set as sensitive detector.
 		ion_cham_layer_log->SetSensitiveDetector(ion_cham_layer_sd);
