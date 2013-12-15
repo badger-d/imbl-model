@@ -41,6 +41,13 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction* Gun
 	diameter_cmd->SetUnitCategory("Length");
 	diameter_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
 
+	// Set the type of energy of the primary.
+	entype_cmd = new G4UIcmdWithAString("/gun/entype",this);
+	entype_cmd->SetGuidance("Select if source energy is mono-energetic or polychromatic");
+	entype_cmd->SetParameterName("choice",true);
+	entype_cmd->SetDefaultValue("mono");
+	entype_cmd->AvailableForStates(G4State_PreInit,G4State_Idle);
+
 	// Set the emission position distribution.
 	distribution_cmd = new G4UIcmdWithAString("/gun/distribution",this);
 	distribution_cmd->SetGuidance("Shoot particles in random directions");
@@ -54,6 +61,7 @@ PrimaryGeneratorMessenger::PrimaryGeneratorMessenger(PrimaryGeneratorAction* Gun
 PrimaryGeneratorMessenger::~PrimaryGeneratorMessenger()
 {
   delete energy_cmd;
+  delete entype_cmd;
   delete isotropy_cmd;
   delete origin_cmd;
   delete diameter_cmd;
@@ -74,6 +82,12 @@ void PrimaryGeneratorMessenger::SetNewValue(G4UIcommand * command,G4String newVa
         Action->Set_Isotropy(newValue);
         G4cout << "Source emission vector isotropy changed to " << newValue << " ............................" << G4endl;
       }
+
+  if(command == entype_cmd)
+    {
+      Action->Set_Energy_Type(newValue);
+      G4cout << "### Source energy type changed to " << newValue << " ........ ###" << G4endl;
+    }
 
   if(command == origin_cmd)
     {

@@ -32,7 +32,8 @@
 /geometry/update 
 
 #------------------ Define source geometry ------------------#
-
+#/gun/entype mono
+/gun/entype /home/dimmockm/workspace/geant/imbl-model/spec.txt
 /gun/particle gamma
 /gun/isotropy forward
 /gun/origin 0.0 0.0 -79.0 mm

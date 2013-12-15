@@ -10,39 +10,49 @@
 #include <sys/time.h>
 #include <iostream>
 #include <fstream>
+#include <exception>
 
 
 PrimaryGeneratorAction::PrimaryGeneratorAction(DetectorConstruction* myDC)
 :detector(myDC)
 {
-  // Set initial values
-  isotropy = "forward";
-  energy = 1. * keV;
-  origin = G4ThreeVector(0.,0.,0.);
-  distribution = "point";
-  particleGun = new G4ParticleGun(1);
-  messenger = new PrimaryGeneratorMessenger(this);
+	// Set initial values
+	entype = "mono";
+	isotropy = "forward";
+	energy = 1. * keV;
+	origin = G4ThreeVector(0.,0.,0.);
+	distribution = "point";
+	particleGun = new G4ParticleGun(1);
+	messenger = new PrimaryGeneratorMessenger(this);
 
-  // Default particle
-  G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
-  G4ParticleDefinition* particle = particleTable->FindParticle("gamma");
+	// Default particle
+	G4ParticleTable* particleTable = G4ParticleTable::GetParticleTable();
+	G4ParticleDefinition* particle = particleTable->FindParticle("gamma");
 
-  // Gun specifications
-  particleGun->SetParticlePosition(origin);
-  particleGun->SetParticleDefinition(particle);
-  particleGun->SetParticleEnergy(energy);
+	// Gun specifications
+	particleGun->SetParticlePosition(origin);
+	particleGun->SetParticleDefinition(particle);
+	particleGun->SetParticleEnergy(energy);
 
 }
 
 PrimaryGeneratorAction::~PrimaryGeneratorAction()
 {
-  delete particleGun;
-  delete messenger;
+	delete particleGun;
+	delete messenger;
 }
 
 
 void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 {
+
+	// The energy type must either be "mono" or a path to a spectral data file.
+	if(entype != "mono"){
+
+		Load_Energy_Array_Vector();
+		energy = Energy();
+	}
+
 	particleGun->SetParticleEnergy(energy);
 	particleGun->SetParticlePosition(origin);
 
@@ -59,7 +69,7 @@ void PrimaryGeneratorAction::GeneratePrimaries(G4Event* anEvent)
 	// Set the emission location to the correct value.
 	particleGun->SetParticlePosition(location);
 
-    // Specify variables for spherical coordinates of emission vector.
+	// Specify variables for spherical coordinates of emission vector.
 	G4double r = 1.0;
 	G4double theta = 0.0;
 	G4double phi = 0.0;
@@ -142,4 +152,66 @@ G4ThreeVector PrimaryGeneratorAction::Distribution(G4String shape)
 
 	//location.rotateZ(pi/2); // USE WITH PHANTOM
 	return location;
+}
+
+
+G4double PrimaryGeneratorAction::Energy()
+{
+	G4double prob_samp = G4UniformRand();
+	G4int index = 0;
+	G4int index_temp = 0;
+	G4int array_size=probArray.size();
+	G4int i = 1;
+	G4int j =0;
+	G4double enval = 0;
+	G4bool prob_flag = false;
+
+	while(prob_flag == false)
+	{
+
+		index_temp= index + floor(array_size/i)-1;
+		if(index_temp >= array_size)
+		{
+			index_temp=array_size-1;
+		}
+
+		if (not ((probArray.at(index_temp) > prob_samp) && (prob_samp > probArray.at(index)))){
+			index=index_temp;
+		}
+
+		if((probArray.at(index+1) > prob_samp) &&  (prob_samp > probArray.at(index))){
+			prob_flag = true;
+		}
+		i++;
+		j++;
+	}
+
+	enval = energyArray.at(index)*keV;
+	return enval;
+}
+
+void PrimaryGeneratorAction::Load_Energy_Array_Vector()
+{
+	G4String fname = Get_Energy_Type();
+	if (energyArray.empty() == false)
+		return;
+
+	ifstream myfile(fname);
+	if (myfile.bad() || myfile.fail()) {
+		G4cerr << "Fatal error: failed to open energy spectrum file: " << fname << G4endl;
+		assert(false);
+	}
+
+	while (!myfile.eof()){
+		G4String line;
+		getline(myfile, line);
+		std::istringstream is(line);
+		G4double temp;
+		G4double temp2;
+		is >> temp >> temp2;
+		probArray.push_back(temp2);
+		energyArray.push_back(temp);
+	}
+
+	myfile.close();
 }

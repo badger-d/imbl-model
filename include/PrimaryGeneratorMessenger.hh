@@ -29,6 +29,9 @@ private:
   // Source emission isotropy command.
   G4UIcmdWithAString* isotropy_cmd;
 
+  // Source emission energy type command.
+  G4UIcmdWithAString* entype_cmd;
+
   // Particle origin command.
   G4UIcmdWith3VectorAndUnit* origin_cmd;
 
