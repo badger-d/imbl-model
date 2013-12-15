@@ -63,19 +63,20 @@
 FieldSetup::FieldSetup()
   :  fChordFinder(0), fLocalChordFinder(0), fStepper(0)
 {
-  fMagneticField = new G4UniformMagField(
+
+  fEMField = new G4UniformMagField(
                          G4ThreeVector(3.3*tesla,
                                        0.0,              // 0.5*tesla,
                                        0.0       ));
-  fLocalMagneticField = new G4UniformMagField(
+  fLocalEMField = new G4UniformMagField(
                               G4ThreeVector(3.3*tesla,
                                             0.0,         // 0.5*tesla,
                                             0.0  ));
 
   fFieldMessenger = new FieldMessenger(this) ;
  
-  fEquation = new G4Mag_UsualEqRhs(fMagneticField); 
-  fLocalEquation = new G4Mag_UsualEqRhs(fLocalMagneticField); 
+  fEquation = new G4Mag_UsualEqRhs(fEMField);
+  fLocalEquation = new G4Mag_UsualEqRhs(fLocalEMField);
  
   fMinStep     = 0.25*mm ; // minimal step of 1 mm is default
   fStepperType = 4 ;      // ClassicalRK4 is default stepper
@@ -90,15 +91,15 @@ FieldSetup::FieldSetup()
 
 FieldSetup::FieldSetup(G4ThreeVector fieldVector)
 {    
-  fMagneticField = new G4UniformMagField(fieldVector);
-  GetGlobalFieldManager()->CreateChordFinder(fMagneticField);
+  fEMField = new G4UniformMagField(fieldVector);
+  GetGlobalFieldManager()->CreateChordFinder(fEMField);
 }
 
 ////////////////////////////////////////////////////////////////////////////////
 
 FieldSetup::~FieldSetup()
 {
-  if(fMagneticField) delete fMagneticField;
+  if(fEMField) delete fEMField;
   if(fChordFinder)   delete fChordFinder;
   if(fStepper)       delete fStepper;
 }
@@ -113,14 +114,14 @@ void FieldSetup::UpdateField()
   SetStepper();
   G4cout<<"The minimal step is equal to "<<fMinStep/mm<<" mm"<<G4endl ;
 
-  fFieldManager->SetDetectorField(fMagneticField );
-  fLocalFieldManager->SetDetectorField(fLocalMagneticField );
+  fFieldManager->SetDetectorField(fEMField );
+  fLocalFieldManager->SetDetectorField(fLocalEMField );
 
   if(fChordFinder) delete fChordFinder;
   if(fLocalChordFinder) delete fLocalChordFinder;
 
-  fChordFinder = new G4ChordFinder( fMagneticField, fMinStep,fStepper);
-  fLocalChordFinder = new G4ChordFinder( fLocalMagneticField, 
+  fChordFinder = new G4ChordFinder( fEMField, fMinStep,fStepper);
+  fLocalChordFinder = new G4ChordFinder( fLocalEMField,
                                          fMinStep,fLocalStepper);
 
   fFieldManager->SetChordFinder( fChordFinder );
@@ -212,18 +213,18 @@ void FieldSetup::SetFieldValue(G4double fieldStrength)
 
 void FieldSetup::SetFieldValue(G4ThreeVector fieldVector)
 {
-  if(fMagneticField) delete fMagneticField;
+  if(fEMField) delete fEMField;
 
   if(fieldVector != G4ThreeVector(0.,0.,0.))
   { 
-    fMagneticField = new  G4UniformMagField(fieldVector);
+    fEMField = new  G4UniformMagField(fieldVector);
   }
   else 
   {
     // If the new field's value is Zero, then 
     //  setting the pointer to zero ensures 
     //  that it is not used for propagation.
-    fMagneticField = 0; 
+    fEMField = 0;
   }
 
   // Either  
@@ -231,8 +232,8 @@ void FieldSetup::SetFieldValue(G4ThreeVector fieldVector)
      // UpdateField();
   //   or simply update the field manager & equation of motion 
   //      with pointer to new field
-  GetGlobalFieldManager()->SetDetectorField(fMagneticField);
-  fEquation->SetFieldObj( fMagneticField ); 
+  GetGlobalFieldManager()->SetDetectorField(fEMField);
+  fEquation->SetFieldObj( fEMField );
 
 }
 
@@ -254,7 +255,7 @@ G4ThreeVector FieldSetup::GetConstantFieldValue()
   static G4double fieldValue[6],  position[4]; 
   position[0] = position[1] = position[2] = position[3] = 0.0; 
 
-  fMagneticField->GetFieldValue( position, fieldValue);
+  fEMField->GetFieldValue( position, fieldValue);
   G4ThreeVector fieldVec(fieldValue[0], fieldValue[1], fieldValue[2]); 
 
   return fieldVec;

@@ -85,8 +85,8 @@ protected:
   G4Mag_UsualEqRhs*       fEquation; 
   G4Mag_UsualEqRhs*       fLocalEquation; 
 
-  G4MagneticField*        fMagneticField; 
-  G4MagneticField*        fLocalMagneticField; 
+  G4MagneticField*        fEMField;
+  G4MagneticField*        fLocalEMField;
 
   G4MagIntegratorStepper* fStepper;
   G4MagIntegratorStepper* fLocalStepper;
